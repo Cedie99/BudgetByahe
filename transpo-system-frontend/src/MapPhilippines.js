@@ -14,7 +14,7 @@ const MapPhilippines = () => {
     container: mapContainer.current,
     style: 'mapbox://styles/mapbox/satellite-v9',
     center: [121.7740, 10.8797], // Philippines
-    zoom: 2.5,
+    zoom: 1.3,
     pitch: 30,
     bearing: 0,
     antialias: true,
@@ -26,14 +26,7 @@ const MapPhilippines = () => {
   map.on('style.load', () => {
     map.setFog({}); // Optional atmosphere effect
 
-    // Start continuous rotation
-    const rotate = () => {
-      const currentBearing = map.getBearing();
-      map.rotateTo(currentBearing + 0.1, { duration: 0 });
-      animationFrameId.current = requestAnimationFrame(rotate);
-    };
 
-    rotate();
   });
 
   return () => {
