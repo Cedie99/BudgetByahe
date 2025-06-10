@@ -1,0 +1,217 @@
+.logo {
+  color: #0d7a49;
+  font-weight: bold;
+  margin-left: 20px;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #000000;
+  padding: 16px;
+  max-width: 100%;
+  position: fixed;
+  z-index: 1000;
+  top: 0;
+  right: 0;
+  left: 0;
+  min-height: 60px;
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 0;
+  margin: 0;
+  z-index: 11;
+}
+
+.nav-links li {
+  display: inline-block;
+}
+
+.nav-links li a {
+  text-decoration: none;
+  color: white;
+  transition: color 0.3s ease;
+  padding: 8px 12px;
+  display: inline-block;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.nav-links li a:hover {
+  color: #0d7a49;
+}
+
+.login,
+.signup {
+  padding: 10px 20px;
+  border-radius: 20px;
+  border: none;
+  cursor: pointer;
+  margin-right: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.login {
+  background: white;
+  color: black;
+  border: 2px solid black;
+}
+
+.signup {
+  background: #0d7a49;
+  color: white;
+}
+
+.login:hover {
+  background: #e6e3e3;
+}
+
+.signup:hover {
+  background: #0b6a3f;
+}
+
+.white-bg {
+  background-color: white !important;
+  transition: background-color 0.3s ease;
+}
+
+.white-bg .nav-links li a {
+  color: black;
+}
+
+.white-bg .nav-links li a:hover {
+  color: #0d7a49;
+}
+
+.white-bg .login {
+  background: black;
+  color: white;
+  border: 2px solid white;
+}
+
+.white-bg .signup {
+  background: #0d7a49;
+  color: white;
+}
+
+/* Mobile Menu Toggle Button */
+.menu-toggle {
+  display: none;
+  flex-direction: column;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.menu-toggle span {
+  width: 25px;
+  height: 3px;
+  background-color: white;
+  margin: 3px 0;
+  transition: 0.3s;
+  border-radius: 2px;
+}
+
+.white-bg .menu-toggle span {
+  background-color: black;
+}
+
+/* Mobile Responsive Styles */
+@media screen and (max-width: 768px) {
+  .navbar {
+    padding: 12px 16px;
+    flex-wrap: wrap;
+  }
+  
+  .menu-toggle {
+    display: flex;
+  }
+  
+  .nav-links {
+    display: none;
+    width: 100%;
+    flex-direction: column;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: inherit;
+    padding: 20px 0;
+    gap: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .nav-links.active {
+    display: flex;
+  }
+  
+  .nav-links li {
+    width: 100%;
+    text-align: center;
+  }
+  
+  .nav-links li a {
+    padding: 12px 20px;
+    width: 100%;
+    display: block;
+    border-radius: 0;
+  }
+  
+  .login,
+  .signup {
+    width: 80%;
+    max-width: 200px;
+    margin: 5px auto;
+    padding: 12px 20px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .navbar {
+    padding: 10px 15px;
+  }
+  
+  .logo {
+    font-size: 1.2rem;
+  }
+  
+  .nav-links {
+    padding: 15px 0;
+  }
+  
+  .nav-links li a {
+    font-size: 16px;
+    padding: 15px 20px;
+  }
+  
+  .login,
+  .signup {
+    font-size: 16px;
+    padding: 15px 20px;
+    width: 90%;
+  }
+}
+
+/* Smooth menu toggle animation */
+.menu-toggle.active span:nth-child(1) {
+  transform: rotate(-45deg) translate(-5px, 6px);
+}
+
+.menu-toggle.active span:nth-child(2) {
+  opacity: 0;
+}
+
+.menu-toggle.active span:nth-child(3) {
+  transform: rotate(45deg) translate(-5px, -6px);
+}

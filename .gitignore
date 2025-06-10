@@ -1,0 +1,8 @@
+# Laravel
+/transpo-system-backend/vendor/
+/transpo-system-backend/node_modules/
+/transpo-system-backend/storage/
+/transpo-system-backend/.env
+
+# React
+/transpo-system-frontend/node_modules/
