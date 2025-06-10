@@ -2,7 +2,7 @@ import React, { useRef, useEffect } from 'react';
 import mapboxgl from 'mapbox-gl';
 import './MapPhilippines.css';
 
-mapboxgl.accessToken = 'pk.eyJ1IjoiY2VkaWVlZSIsImEiOiJjbWJicG94NGswbnFxMmpxMTc5cm93Y2tkIn0.WG-O3ewDyQ8n1w5OYSvCag'; // Your token
+mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_TOKEN; // Your token
 
 const MapPhilippines = () => {
   const mapContainer = useRef(null);
