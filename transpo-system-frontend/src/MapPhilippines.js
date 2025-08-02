@@ -12,10 +12,10 @@ const MapEiffelTower = () => {
     const map = new mapboxgl.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/standard',
-      center: [120.9579, 14.8185], // Coordinates for Santa Maria, Bulacan
-      zoom: 17.5,                // High zoom for detailed 3D
-      pitch: 60,                 // Tilt to view building depth
-      bearing: -30,              // Optional camera rotation
+      center: [121.7740, 12.8797], // Coordinates for Santa Maria, Bulacan
+      zoom: 3.5,                // High zoom for detailed 3D
+      pitch: 0,                 // Tilt to view building depth
+      bearing: -5,              // Optional camera rotation
       antialias: true,
       projection: 'globe',
     });

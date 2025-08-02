@@ -1,0 +1,324 @@
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.map-wrapper {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+
+.fare-container {
+  position: absolute;
+  top: 90px;
+  left: 20px;
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  padding: 40px;
+  width: 500px;
+  max-width: 360px;
+  border-radius: 32px;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.50);
+  z-index: 10;
+  font-family: 'Segoe UI', sans-serif;
+  margin-top: 20px;
+}
+
+.fare-container h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 16px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.input-pair {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+
+.input-group input {
+  padding: 10px 12px;
+  border: 2px solid green;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.3s;
+  background-color: white;
+  color: black;
+  font-weight: 600;
+}
+
+.input-group input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.input-group button {
+  padding: 12px;
+  background-color: green;
+  color: white;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.input-group button:hover {
+  background-color: #059669;
+}
+
+.origin-icon {
+  position: absolute;
+  left: -24px;
+  top: 22%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  opacity: 0.5;
+}
+
+.destination-icon {
+  position: absolute;
+  left: -26px;
+  top: 81%;
+  transform: translateY(-50%);
+  width: 19px;
+  height: 19px;
+  opacity: 0.5;
+}
+
+.switch-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  background-color: #f3f4f6;
+  border-radius: 50%;
+  padding: 4px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.switch-icon:hover {
+  transform: translateY(-50%) scale(1.1);
+}
+
+.fare-details {
+  color: #374151;
+  font-size: 16px;
+}
+
+.fare-details p {
+  margin: 4px 0;
+  font-weight: 500;
+}
+
+.alternative-routes h4 {
+  margin-top: 16px;
+  margin-bottom: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.alternative-routes button {
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background-color: #e5e7eb;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.alternative-routes button:hover {
+  background-color: #d1d5db;
+}
+
+.alternative-routes button.active {
+  background-color: #10b981;
+  color: white;
+}
+
+
+.transport-info {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border: none;
+  padding: 20px;
+  border-radius: 16px;
+  margin-top: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  overflow-y: scroll;
+  height: 300px;
+}
+
+.transport-info::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: green;
+  border-radius: 16px 16px 0 0;
+}
+
+.transport-info:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.transport-info p {
+  color: #1e293b;
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0;
+  font-weight: 500;
+  white-space: pre-line;
+}
+
+/* Style for different message types */
+.transport-info p:first-child {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+/* Style for step indicators */
+.transport-info p:contains("STEP") {
+  font-weight: 600;
+  margin: 12px 0 4px 0;
+  color: #0f172a;
+}
+
+/* Style for tips and additional info */
+.transport-info p:contains("💡") {
+  background: rgba(59, 130, 246, 0.05);
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin: 8px 0;
+  border-left: 3px solid #3b82f6;
+  font-size: 13px;
+  color: #1e40af;
+}
+
+/* Style for success messages */
+.transport-info p:contains("✅") {
+  background: rgba(16, 185, 129, 0.05);
+  padding: 12px 16px;
+  border-radius: 10px;
+  border-left: 4px solid #10b981;
+  color: #065f46;
+  font-weight: 600;
+}
+
+/* Style for warning messages */
+.transport-info p:contains("⚠️") {
+  background: rgba(245, 158, 11, 0.05);
+  padding: 12px 16px;
+  border-radius: 10px;
+  border-left: 4px solid #f59e0b;
+  color: #92400e;
+  font-weight: 600;
+}
+
+/* Style for fare information */
+.transport-info p:contains("💰") {
+  background: rgba(139, 92, 246, 0.05);
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #5b21b6;
+  font-weight: 500;
+  display: inline-block;
+  margin: 4px 0;
+}
+
+/* Custom Scrollbar Styling */
+.transport-info::-webkit-scrollbar {
+  width: 5px;
+}
+
+.transport-info::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 1px;
+}
+
+.transport-info::-webkit-scrollbar-thumb {
+  background: rgba(128, 128, 128, 0.123);
+  border-radius: 10px;
+}
+
+.transport-info::-webkit-scrollbar-thumb:hover {
+  background: rgba(107, 107, 107, 0.123);
+}
+
+
+.custom-info-window {
+  font-family: 'Segoe UI', sans-serif;
+  color: #1e293b;
+  max-width: 200px;
+}
+
+.custom-info-window h3 {
+  margin: 0 0 4px;
+  font-size: 16px;
+  color: #2563eb;
+}
+
+.custom-info-window p {
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* Highlight color for selected text */
+.custom-info-window ::selection {
+  background: #22d3ee;
+  color: #0f172a;
+}
+
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .transport-info {
+    padding: 16px;
+    margin-top: 12px;
+    border-radius: 12px;
+  }
+  
+  .transport-info p {
+    font-size: 13px;
+  }
+  
+  .transport-info p:first-child {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .switch-icon {
+    right: 10px;
+    top: 80px; /* Adjust if needed */
+    transform: none;
+  }
+}
+

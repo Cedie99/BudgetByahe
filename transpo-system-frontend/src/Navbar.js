@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import './Navbar.css';
+import logo from './assets/bb-logo.png';
+import { useNavigate } from 'react-router-dom';
 
 const Navbar = ({ whiteBackground }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate = useNavigate(); // Ensure you import useNavigate from 'react-router-dom'
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -11,6 +14,20 @@ const Navbar = ({ whiteBackground }) => {
   const closeMenu = () => {
     setIsMenuOpen(false);
   };
+
+  const mainFeature = (e) => {
+    e.preventDefault();
+    // close your menu logic here...
+    navigate('/mainFeature'); // ✅ now it works
+  };
+
+  const home = (e) => {
+    e.preventDefault();
+    // close your menu logic here...
+    navigate('/home'); // ✅ now it works
+  };
+
+
 
   const handleSmoothScroll = (e, id) => {
   e.preventDefault(); // prevent default anchor behavior
@@ -26,23 +43,27 @@ const Navbar = ({ whiteBackground }) => {
 
   return (
     <nav className={`navbar ${whiteBackground ? 'white-bg' : ''}`}>
-      <h2 className="logo" onClick={(e) => handleSmoothScroll(e, 'main-section')}>Budget Byahe</h2>
-      
-      <div className={`menu-toggle ${isMenuOpen ? 'active' : ''}`} onClick={toggleMenu}>
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
-      
-      <ul className={`nav-links ${isMenuOpen ? 'active' : ''}`}>
-        <li><a href="#main-section" onClick={(e) => handleSmoothScroll(e, 'main-section')}>HOME</a></li>
-        <li><a href="#" onClick={closeMenu}>ROUTES</a></li>
-        <li><a href="#" onClick={closeMenu}>FARES</a></li>
-        <li><a href="#" onClick={closeMenu}>SCHEDULES</a></li>
-        <li><button className="login" onClick={closeMenu}>LOGIN</button></li>
-        <li><button className="signup" onClick={closeMenu}>SIGNUP</button></li>
-      </ul>
-    </nav>
+  <div className="logo-wrapper" onClick={(e) => handleSmoothScroll(e, 'main-section')}>
+    <img src={logo} alt="Jeepney" className="brand-logo" />
+    <h2 className="logo">Budget Byahe</h2>
+  </div>
+  
+  <div className={`menu-toggle ${isMenuOpen ? 'active' : ''}`} onClick={toggleMenu}>
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+  
+  <ul className={`nav-links ${isMenuOpen ? 'active' : ''}`}>
+    <li><a href="#main-section" onClick={home}>HOME</a></li>
+    <li><a href="#" onClick={mainFeature}>ROUTES</a></li>
+    <li><a href="#" onClick={closeMenu}>FARES</a></li>
+    <li><a href="#" onClick={closeMenu}>MAP</a></li>
+    <li><button className="login" onClick={closeMenu}>LOGIN</button></li>
+    <li><button className="signup" onClick={closeMenu}>SIGNUP</button></li>
+  </ul>
+</nav>
+
   );
 };
 
