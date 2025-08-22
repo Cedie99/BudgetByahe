@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './App.css';
 import jeepney from './assets/greenjeep.png'; // <- add the image to src/
 import MapPhilippines from './MapPhilippines.js';
 import peso from './assets/peso.png'; // <- add the peso image to src/
 import route from './assets/route.png'; // <- add the route image to src/
 import devices from './assets/devices.png'; // <- add the devices image to src/
-import Navbar from './Navbar.js';
 import fb from './assets/fb.png'; // <- add the fb image to src/
 import ig from './assets/insta.png'; // <- add the ig image to src/
 import gmail from './assets/gmail.png'; // <- add the gmail image to src/
@@ -17,6 +17,7 @@ import MainFeature from './MainFeature.js'; // <- add the MainFeature component
 
 function Home() {
   const [whiteNavbar, setWhiteNavbar] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
   const handleScroll = () => {
@@ -43,8 +44,6 @@ function Home() {
 
   return (
     <div className="container">
-       
-
       <main className="main-section" id='main-section'>
         <div className="content">
           <div className='bg-images'>
@@ -55,13 +54,9 @@ function Home() {
             <HeroSection/>
           </div>
                       <button
-                        className="learn-more"
+                        className="find-route-button"
                         onClick={() => {
-                          const section = document.getElementById('about-us');
-                          if (section) {
-                            section.scrollIntoView({ behavior: 'smooth' });
-                            window.history.replaceState(null, '', window.location.pathname);
-                          }
+                          navigate('/mainFeature');
                         }}
                         >
                         <img

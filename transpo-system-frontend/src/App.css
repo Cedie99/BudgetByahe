@@ -124,7 +124,7 @@ body {
   color: #0d7a49;
 }
 
-.learn-more {
+.find-route-button {
   background: #0d7a49;
   color: white;
   padding: 16px 20px;
@@ -136,7 +136,7 @@ body {
   font-size: 20px;
 }
 
-.learn-more:hover {
+.find-route-button:hover {
   background: #0b6a3f;
 }
 
