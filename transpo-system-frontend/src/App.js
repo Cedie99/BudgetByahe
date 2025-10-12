@@ -15,6 +15,8 @@ import bgImages from './assets/bb-logo.png'; // <- add the background image to s
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import MainFeature from './MainFeature.js'; // <- add the MainFeature component
 import Home from './Home.js'; // <- add the Home component
+import FareUpload from "./FareUpload";
+import Fares from "./Fares";
 
 function App() {
   return (
@@ -23,10 +25,11 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />  
         <Route path="/home" element={<Home />} />
-        <Route path="/mainFeature" element={<MainFeature />} />
+        <Route path="/mainFeature" element={<MainFeature />} /> 
+        <Route path="/fareupload" element={<FareUpload />} />
+        <Route path="/fares" element={<Fares />} />
       </Routes>
     </Router>
   );
 }
-
 export default App;

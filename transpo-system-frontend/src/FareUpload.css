@@ -1,0 +1,115 @@
+/* ---------- PAGE WRAPPER ---------- */
+.page-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: #f9fafb;
+  padding: 20px;
+}
+
+/* ---------- FARE UPLOAD CONTAINER ---------- */
+.fare-upload-container {
+  width: 100%;
+  max-width: 600px;
+  padding: 40px 35px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.fare-upload-container h2 {
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #0d7a49;
+  text-align: left;
+}
+
+.description {
+    text-align: left;
+    margin-top: 8px;
+    margin-bottom: 24px;
+    font-size: 16px;
+}
+
+/* ---------- SELECT FIELD ---------- */
+.fare-upload-field {
+  margin-bottom: 25px;
+  text-align: left;
+}
+
+.fare-upload-field label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.95rem;
+}
+
+.fare-upload-select {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background-color: #f9fafb;
+  color: #111827;
+  cursor: pointer;
+  transition: border 0.2s ease;
+  outline: none;
+}
+
+.fare-upload-select:focus {
+  border-color: #0d7a49;
+}
+
+/* ---------- DRAG & DROP ---------- */
+.drag-drop-zone {
+  border: 2px dashed #d1d5db;
+  border-radius: 12px;
+  padding: 40px 20px;
+  background-color: #f9fafb;
+  cursor: pointer;
+  color: #6b7280;
+  transition: all 0.3s ease;
+}
+
+.drag-drop-zone:hover {
+  border-color: #0d7a49;
+  background: #f3faf6;
+  color: #0d7a49;
+}
+
+.drag-drop-zone.dragging {
+  border-color: #0d7a49;
+  background: #e9fdf1;
+  color: #0d7a49;
+}
+
+/* ---------- FILE NAME ---------- */
+.uploaded-file {
+  margin-top: 20px;
+  font-size: 0.95rem;
+  color: #374151;
+  background: #f9fafb;
+  padding: 10px 15px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  display: inline-block;
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 600px) {
+  .fare-upload-container {
+    margin: 0;
+    padding: 30px 25px;
+  }
+
+  .drag-drop-zone {
+    padding: 30px 15px;
+  }
+}
