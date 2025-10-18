@@ -22,6 +22,14 @@ function Signup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  
+  let lastPage = localStorage.getItem("lastPage") || "/";
+  let backLabel = "Previous Page";
+
+  if (lastPage === "/home") backLabel = "Home";
+  else if (lastPage.includes("mainFeature")) backLabel = "Routes";
+  else if (lastPage.includes("fare")) backLabel = "Fares";
+  else if (lastPage.includes("map")) backLabel = "Map";
 
   // --- EMAIL & PASSWORD SIGNUP ---
   const handleSubmit = async (e) => {
@@ -112,6 +120,33 @@ function Signup() {
   return (
     <div className="auth-page">
       <div className="auth-card">
+        <button
+          className="back-home-btn"
+          style={{
+            position: 'absolute',
+            top: '16px',
+            left: '16px',
+            background: 'none',
+            border: 'none',
+            color: '#0d7a49',
+            cursor: 'pointer',
+            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px'
+          }}
+          onClick={() => navigate(lastPage)}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg"
+               fill="none"
+               viewBox="0 0 24 24"
+               strokeWidth={2}
+               stroke="currentColor"
+               style={{ width: '16px', height: '16px' }}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+          Back to {backLabel}
+        </button>
         <div className="auth-left">
           <h2 className="auth-title">Create account</h2>
           <p className="auth-subtext">

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { GoogleMap, useJsApiLoader, DirectionsRenderer, Marker, Polyline } from '@react-google-maps/api';
+import { FaMapMarkerAlt, FaFlag } from "react-icons/fa";
 import  './MainFeature.css';
 import  switchLogo from './assets/loop.png';
 import originIcon from './assets/button.png';
@@ -589,7 +590,7 @@ const transferPoints = [
   { name: "Pintong Bato", lat: 14.840166, lng: 120.979607},
   { name: "Santa Maria Proper", lat: 14.818701, lng: 120.960834 },
 
-
+  
   { name: "Cityland-Perez Toda", lat: 14.885105, lng: 121.000043},
   { name: "Camangyanan", lat: 14.802373, lng: 120.971376},
 ];
@@ -625,26 +626,32 @@ const FareCalculator = () => {
   const destinationRef = useRef(null);
 
   const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: 'AIzaSyD-kIF53r_sJGuYj-agksGJn0p-ulwWBZM',
+    googleMapsApiKey: 'AIzaSyAZH_hOOhFn__misPTBpWebZ7R10PPOKEA',
     libraries
   });
 
   useEffect(() => {
     if (isLoaded && originRef.current) {
-      const autocompleteOrigin = new window.google.maps.places.Autocomplete(originRef.current);
-      autocompleteOrigin.addListener('place_changed', () => {
-        const place = autocompleteOrigin.getPlace();
-        setOrigin(place.formatted_address || place.name);
-      });
-    }
+  const autocompleteOrigin = new window.google.maps.places.Autocomplete(originRef.current, {
+    fields: ["place_id", "formatted_address", "geometry", "name"], // specify fields
+  });
 
-    if (isLoaded && destinationRef.current) {
-      const autocompleteDestination = new window.google.maps.places.Autocomplete(destinationRef.current);
-      autocompleteDestination.addListener('place_changed', () => {
-        const place = autocompleteDestination.getPlace();
-        setDestination(place.formatted_address || place.name);
-      });
-    }
+  autocompleteOrigin.addListener("place_changed", () => {
+    const place = autocompleteOrigin.getPlace();
+    setOrigin(place.formatted_address || place.name);
+  });
+}
+
+if (isLoaded && destinationRef.current) {
+  const autocompleteDestination = new window.google.maps.places.Autocomplete(destinationRef.current, {
+    fields: ["place_id", "formatted_address", "geometry", "name"], // specify fields
+  });
+
+  autocompleteDestination.addListener("place_changed", () => {
+    const place = autocompleteDestination.getPlace();
+    setDestination(place.formatted_address || place.name);
+  });
+}
   }, [isLoaded]);
 
   const isNearJeepneyRoute = (point) => {
@@ -900,13 +907,23 @@ const FareCalculator = () => {
   return isLoaded ? (
     <div className="map-wrapper">
       <div className="fare-container">
-        <h2>Commuter Fare & Route Checker</h2>
+        <h2>Transport Fare Calculator & Navigator</h2>
+        <p className='fare-description'>Enter your starting point and destination to instantly calculate the estimated fare for your commute.</p>
         <div className="input-group">
           <div className="input-pair">
-            <img src={originIcon} className='origin-icon' /><input type="text" placeholder="Enter Origin" ref={originRef} id='origin'/>
-            <img src={destinationIcon} className='destination-icon' /><input type="text" placeholder="Enter Destination" ref={destinationRef} id='destination'/>
+            <div className="input-with-icon">
+              <FaMapMarkerAlt className="input-icon" />
+              <input type="text" placeholder="Enter Origin" ref={originRef} id='origin' />
+            </div>
+
+            <div className="input-with-icon">
+              <FaFlag className="input-icon" />
+              <input type="text" placeholder="Enter Destination" ref={destinationRef} id='destination' />
+            </div>
+
             <img src={switchLogo} onClick={switchLocation} className='switch-icon' />
           </div>
+
           <button onClick={calculateRoute} disabled={isCalculating}>
             {isCalculating ? 'Calculating...' : 'Calculate Fare'}
           </button>
@@ -919,8 +936,6 @@ const FareCalculator = () => {
               <p>Estimated Fare: {distanceKm >= 20 ? 'N/A' : `₱${fare}`}</p>
               <p>Suggested Transport: {suggestion}</p>
               <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-                <img src='http://maps.google.com/mapfiles/ms/icons/orange-dot.png' style={{height: '20px'}}/>
-                <span>Transfer Points</span>
               </div>
               <div className="transport-info">
                 <p dangerouslySetInnerHTML={{ __html: transportMode.replace(/\n/g, '<br/>') }}></p>

@@ -216,5 +216,16 @@
   .name-row{ flex-direction:column; }
 }
 
-.auth-card{ transition: transform 0.18s ease, box-shadow 0.18s ease; }
-.auth-card:hover{ transform: translateY(-4px); box-shadow: 0 18px 50px rgba(3,25,11,0.08); }
+.auth-card {
+  transition: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.auth-card:hover {
+  transform: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.auth-card {
+  position: relative;
+}

@@ -13,19 +13,26 @@ import {
   facebookProvider,
 } from "./firebase";
 
-function Login(){
+function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
-  // Email & Password Login
+  let lastPage = localStorage.getItem("lastPage") || "/";
+  let backLabel = "Previous Page";
+
+  if (lastPage === "/home") backLabel = "Home";
+  else if (lastPage.includes("mainFeature")) backLabel = "Routes";
+  else if (lastPage.includes("fare")) backLabel = "Fares";
+  else if (lastPage.includes("map")) backLabel = "Map";
+
+  // --- Email & Password Login ---
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const userCred = await signInWithEmailAndPassword(auth, email, password);
       const idToken = await userCred.user.getIdToken();
 
-      // Save token locally (or send to backend)
       localStorage.setItem('auth', 'true');
       localStorage.setItem('firebase_id_token', idToken);
 
@@ -36,7 +43,7 @@ function Login(){
     }
   };
 
-  // Google Login
+  // --- Google Login ---
   const handleGoogle = async () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
@@ -52,7 +59,7 @@ function Login(){
     }
   };
 
-  // Facebook Login
+  // --- Facebook Login ---
   const handleFacebook = async () => {
     try {
       const result = await signInWithPopup(auth, facebookProvider);
@@ -71,9 +78,36 @@ function Login(){
   return (
     <div className="auth-page">
       <div className="auth-card">
+        <button
+          className="back-home-btn"
+          style={{
+            position: 'absolute',
+            top: '16px',
+            left: '16px',
+            background: 'none',
+            border: 'none',
+            color: '#0d7a49',
+            cursor: 'pointer',
+            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px'
+          }}
+          onClick={() => navigate(lastPage)}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg"
+               fill="none"
+               viewBox="0 0 24 24"
+               strokeWidth={2}
+               stroke="currentColor"
+               style={{ width: '16px', height: '16px' }}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+          Back to {backLabel}
+        </button>
         <div className="auth-left">
           <h2 className="auth-title">Welcome Back</h2>
-          <p className="auth-subtext">Log in to access fare tools, saved routes and personalized settings.</p>
+          <p className="auth-subtext">Log in to access fare tools, saved routes, and personalized settings.</p>
 
           <form className="auth-form" onSubmit={handleSubmit}>
             <input className="auth-input" type="email" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)} required />
@@ -97,10 +131,10 @@ function Login(){
             <div className="social-label">login with</div>
 
             <div className="social-row">
-              <button type="button" className="social-btn social-google" onClick={handleGoogle} aria-label="Sign in with Google">
+              <button type="button" className="social-btn social-google" onClick={handleGoogle}>
                 <img src={googleLogo} alt="Google" style={{width:22, height:22}} />
               </button>
-              <button type="button" className="social-btn social-fb" onClick={handleFacebook} aria-label="Sign in with Facebook">
+              <button type="button" className="social-btn social-fb" onClick={handleFacebook}>
                 <img src={fbLogo} alt="Facebook" style={{width:20, height:20}} />
               </button>
             </div>
@@ -110,12 +144,12 @@ function Login(){
         <div className="auth-right">
           <img src={bbLogo} alt="Budget Byahe" className="brand-logo-panel" />
           <h3>Transparent Fare, Fair Rides</h3>
-          <p>Budget Biyahe helps commuters calculate accurate fares across tricycles and jeepneys. Secure your trips, save routes, and get fare updates.</p>
-          <div className="auth-footer-link" onClick={() => window.location.href = '/'}>Learn more on the Homepage</div>
+          <p>Budget Byahe helps commuters calculate accurate fares across tricycles and jeepneys. Secure your trips, save routes, and get fare updates.</p>
+          <div className="auth-footer-link" onClick={() => navigate('/')}>Learn more on the Homepage</div>
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export default Login;
