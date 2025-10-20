@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { GoogleMap, useJsApiLoader, DirectionsRenderer, Marker, Polyline } from '@react-google-maps/api';
-import { FaMapMarkerAlt, FaFlag } from "react-icons/fa";
+import { FaMapMarkerAlt, FaFlag, FaKeyboard, FaArrowRight, FaArrowLeft } from "react-icons/fa";
+import { IoCloseCircleOutline } from "react-icons/io5";
 import  './MainFeature.css';
 import  switchLogo from './assets/loop.png';
-import originIcon from './assets/button.png';
-import destinationIcon from './assets/travel.png';
 
 const containerStyle = {
   width: '100vw',
@@ -624,6 +623,66 @@ const FareCalculator = () => {
   const [isCalculating, setIsCalculating] = useState(false);
   const originRef = useRef(null);
   const destinationRef = useRef(null);
+  const [showLocationModal, setShowLocationModal] = useState(false);
+  const [allowManualInput, setAllowManualInput] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
+  const [discountType, setDiscountType] = useState('none');
+  const [isPanelOpen, setIsPanelOpen] = useState(true);
+  const togglePanel = () => setIsPanelOpen(prev => !prev);
+
+
+    const fillCurrentLocationAsOrigin = () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser.");
+      return;
+    }
+  
+    setIsLocating(true);
+    setShowLocationModal(false); 
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+
+        const tryGeocode = (attempt = 1) => {
+          if (!window.google?.maps?.Geocoder) {
+            if (attempt < 3) {
+              setTimeout(() => tryGeocode(attempt + 1), 500);
+              return;
+            }
+            alert("Geocoder unavailable. Please check your internet connection.");
+            setIsLocating(false);
+            return;
+          }
+
+          const geocoder = new window.google.maps.Geocoder();
+          geocoder.geocode({ location: { lat: latitude, lng: longitude } }, (results, status) => {
+
+            setIsLocating(false);
+            if (status === "OK" && results?.length) {
+              const address = results[0].formatted_address;
+              document.getElementById("origin").value = address;
+              setOrigin(address);
+              setAllowManualInput(true);
+            } else {
+              alert("Couldn't convert location to address. Try again or check internet connection.");
+            }
+          });
+        };
+
+        tryGeocode();
+      },
+      (error) => {
+        setIsLocating(false);
+        if (error.code === error.PERMISSION_DENIED) {
+          alert("Location permission denied. Please enable GPS or allow access in browser settings.");
+        } else {
+          alert("Unable to retrieve location. Please make sure GPS is enabled.");
+        }
+      },
+      { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
+    );
+  };
+
 
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: 'AIzaSyAZH_hOOhFn__misPTBpWebZ7R10PPOKEA',
@@ -783,6 +842,27 @@ if (isLoaded && destinationRef.current) {
       }
     };
   }
+  const clearInput = () => {
+    if(originRef.current)
+    {
+      originRef.current.value = '';
+    }
+    if(destinationRef.current)
+    {
+      destinationRef.current.value = '';
+    }
+
+    setOrigin('');
+    setDestination('');
+    setDirectionsResult('');
+    setDistanceKm(0);
+    setFare(0);
+    setSuggestion('');
+    setTransportMode('');
+    setSelectedRouteIndex(0);
+    setAllowManualInput(false); 
+    setDiscountType('none'); 
+  }
     
 
   const calculateRoute = () => {
@@ -818,8 +898,8 @@ if (isLoaded && destinationRef.current) {
       travelMode: window.google.maps.TravelMode.DRIVING,
       provideRouteAlternatives: true,
       avoidFerries: true,
-      avoidTolls: false, // Changed to false to get more route options
-      optimizeWaypoints: false, // Add this for more consistent results
+      avoidTolls: false, 
+      optimizeWaypoints: false, 
     }, (result, status) => {
       setIsCalculating(false);
       
@@ -905,67 +985,94 @@ if (isLoaded && destinationRef.current) {
   };
 
   return isLoaded ? (
-    <div className="map-wrapper">
-      <div className="fare-container">
-        <h2>Transport Fare Calculator & Navigator</h2>
-        <p className='fare-description'>Enter your starting point and destination to instantly calculate the estimated fare for your commute.</p>
-        <div className="input-group">
-          <div className="input-pair">
-            <div className="input-with-icon">
-              <FaMapMarkerAlt className="input-icon" />
-              <input type="text" placeholder="Enter Origin" ref={originRef} id='origin' />
+   <div className="map-wrapper">
+        <div className={`fare-container ${!isPanelOpen ? 'closed' : ''}`}>
+            {/* Collapse/Expand Toggle Button */}
+            <div className="panel-toggle" onClick={togglePanel}>
+                <FaArrowLeft size={20} className="toggle-icon close-icon" />
+                <FaArrowRight size={20} className="toggle-icon open-icon" />
             </div>
 
-            <div className="input-with-icon">
-              <FaFlag className="input-icon" />
-              <input type="text" placeholder="Enter Destination" ref={destinationRef} id='destination' />
-            </div>
+            <div className="fare-content">
+                <h2>Transport Fare Calculator & Navigator</h2>
+                <p className='fare-description'>Enter your starting point and destination to instantly calculate the estimated fare for your commute.</p>
+                <div className="input-group">
+                    <div className="input-pair">
+                        <div className="input-with-icon">
+                            <FaMapMarkerAlt className="input-icon" />
+                            <input
+                                type="text"
+                                placeholder="Enter Origin"
+                                ref={originRef}
+                                id='origin'
+                                onFocus={() => {
+                                    if(!allowManualInput) setShowLocationModal(true);
+                                }}
+                            />
+                        </div>
 
-            <img src={switchLogo} onClick={switchLocation} className='switch-icon' />
-          </div>
+                        <div className="input-with-icon">
+                            <FaFlag className="input-icon" />
+                            <input type="text" placeholder="Enter Destination" ref={destinationRef} id='destination' />
+                        </div>
 
-          <button onClick={calculateRoute} disabled={isCalculating}>
-            {isCalculating ? 'Calculating...' : 'Calculate Fare'}
-          </button>
-        </div>
+                        <img src={switchLogo} onClick={switchLocation} className='switch-icon' />
+                    </div>
+                    <p className='clear-input' onClick={clearInput}>Clear all</p>
+                    <div className="discount-section">
+                        <label>Discount Category:</label>
+                        <p>A 20% discount is applied to the base fare for all selected categories.</p>
+                        <select onChange={(e) => setDiscountType(e.target.value)}>
+                            <option value="none">Regular (No Discount)</option>
+                            <option value="student">Student</option>
+                            <option value="pwd">PWD</option>
+                            <option value="senior">Senior Citizen</option>
+                        </select>
+                    </div>
 
-        <div className="fare-details">
-          {distanceKm > 0 && (
-            <>
-              <p>Distance: {distanceKm} km</p>
-              <p>Estimated Fare: {distanceKm >= 20 ? 'N/A' : `₱${fare}`}</p>
-              <p>Suggested Transport: {suggestion}</p>
-              <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-              </div>
-              <div className="transport-info">
-                <p dangerouslySetInnerHTML={{ __html: transportMode.replace(/\n/g, '<br/>') }}></p>
-              </div>
-            </>
-          )}
-          
-          {directionsResult?.routes?.length > 1 && (
-            <div className="alternative-routes">
-              <h4>Alternative Routes:</h4>
-              {directionsResult.routes.map((route, index) => (
-                <button
-                  key={index}
-                  onClick={() => setSelectedRouteIndex(index)}
-                  style={{
-                    margin: '4px',
-                    backgroundColor: selectedRouteIndex === index ? 'green' : '#ccc',
-                    color: selectedRouteIndex === index ? '#fff' : '#000',
-                    border: 'none',
-                    padding: '5px 10px',
-                    cursor: 'pointer'
-                  }}
-                >
-                  Route {index + 1} ({route.legs[0].distance.text})
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
+                    <button onClick={calculateRoute} disabled={isCalculating}>
+                        {isCalculating ? 'Calculating...' : 'Calculate Fare'}
+                    </button>
+                </div>
+
+                <div className="fare-details">
+                    {distanceKm > 0 && (
+                        <>
+                            <p>Distance: {distanceKm} km</p>
+                            <p>Estimated Fare: {distanceKm >= 20 ? 'N/A' : `₱${fare}`}</p>
+                            <p>Suggested Transport: {suggestion}</p>
+                            <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                            </div>
+                            <div className="transport-info">
+                                <p dangerouslySetInnerHTML={{ __html: transportMode.replace(/\n/g, '<br/>') }}></p>
+                            </div>
+                        </>
+                    )}
+                    
+                    {directionsResult?.routes?.length > 1 && (
+                        <div className="alternative-routes">
+                            <h4>Alternative Routes:</h4>
+                            {directionsResult.routes.map((route, index) => (
+                                <button
+                                    key={index}
+                                    onClick={() => setSelectedRouteIndex(index)}
+                                    style={{
+                                        margin: '4px',
+                                        backgroundColor: selectedRouteIndex === index ? 'green' : '#ccc',
+                                        color: selectedRouteIndex === index ? '#fff' : '#000',
+                                        border: 'none',
+                                        padding: '5px 10px',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    Route {index + 1} ({route.legs[0].distance.text})
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div> 
+        </div> 
 
       <GoogleMap mapContainerStyle={containerStyle} center={center} zoom={15}>
         {directionsResult && (
@@ -1025,6 +1132,58 @@ if (isLoaded && destinationRef.current) {
           />
         ))}
       </GoogleMap>
+      {isLocating && (
+          <div className="location-loading-overlay">
+            <div className="location-spinner"></div>
+            <p>Fetching your location...</p>
+            <p className="loading-tip">Please ensure your GPS is on and browser permission is granted.</p>
+          </div>
+        )}
+
+      {showLocationModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+
+            <button
+              className="modal-close-btn"
+              onClick={() => {
+                setShowLocationModal(false);
+                originRef.current?.blur(); 
+              }}
+            >
+              <IoCloseCircleOutline size={24} />
+            </button>
+
+            <h3>Choose Your Starting Point</h3>
+            <p>Would you like to use your current location?</p>
+
+            <div className="modal-actions">
+              <button
+                className="confirm-btn"
+                onClick={() => {
+                  setShowLocationModal(false);
+                  fillCurrentLocationAsOrigin();
+                }}
+              >
+                <FaMapMarkerAlt size={16} style={{ marginRight: "6px" }} />
+                Use My Location
+              </button>
+
+              <button
+                className="cancel-btn"
+                onClick={() => {
+                  setAllowManualInput(true);
+                  setShowLocationModal(false);
+                  originRef.current?.focus();
+                }}
+              >
+                <FaKeyboard size={16} style={{ marginRight: "6px" }} />
+                Enter Manually
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   ) : (<p>Loading map...</p>);
 };
