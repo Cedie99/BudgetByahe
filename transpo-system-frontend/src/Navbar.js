@@ -9,7 +9,12 @@ const Navbar = ({ whiteBackground }) => {
 
   const login = () => {
     localStorage.setItem("auth", "true");
-    navigate("/mainFeature");
+    navigate("/login");
+  };
+
+  const signup = () => {
+    closeMenu();
+    navigate("/signup");
   };
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
@@ -95,7 +100,7 @@ const Navbar = ({ whiteBackground }) => {
             </button>
           </li>
           <li>
-            <button className="btn-signup" onClick={closeMenu}>
+            <button className="btn-signup" onClick={signup}>
               Sign Up
             </button>
           </li>

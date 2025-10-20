@@ -1,35 +1,45 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import './App.css';
-import jeepney from './assets/greenjeep.png'; // <- add the image to src/
-import MapPhilippines from './MapPhilippines.js';
-import peso from './assets/peso.png'; // <- add the peso image to src/
-import route from './assets/route.png'; // <- add the route image to src/
-import devices from './assets/devices.png'; // <- add the devices image to src/
-import Navbar from './Navbar.js';
-import fb from './assets/fb.png'; // <- add the fb image to src/
-import ig from './assets/insta.png'; // <- add the ig image to src/
-import gmail from './assets/gmail.png'; // <- add the gmail image to src/
-import HeroSection from './HeroSection.js';
-import search from './assets/search.png'; // <- add the search image to src/
-import bgImages from './assets/bb-logo.png'; // <- add the background image to src/
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import MainFeature from './MainFeature.js'; // <- add the MainFeature component
-import Home from './Home.js'; // <- add the Home component
-import FareUpload from "./FareUpload";
-import Fares from "./Fares";
+import Navbar from './Navbar';
+import Home from './Home';
+import MainFeature from './MainFeature';
+import FareUpload from './FareUpload';
+import Fares from './Fares';
+import Login from './Login';
+import Signup from './Signup';
 
-function App() {
+function AppWithNavbar() {
+  const location = useLocation();
+  const hideNavbarPaths = ["/login", "/signup"];
+  const showNavbar = !hideNavbarPaths.includes(location.pathname);
+
+  useEffect(() => {
+    if (!hideNavbarPaths.includes(location.pathname)) {
+      localStorage.setItem("lastPage", location.pathname);
+    }
+  }, [location.pathname]);
+
   return (
-    <Router>
-      <Navbar />
+    <>
+      {showNavbar && <Navbar />}
       <Routes>
         <Route path="/" element={<Home />} />  
         <Route path="/home" element={<Home />} />
         <Route path="/mainFeature" element={<MainFeature />} /> 
         <Route path="/fareupload" element={<FareUpload />} />
         <Route path="/fares" element={<Fares />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
       </Routes>
+    </>
+  );
+}
+
+export default function App() {
+  return (
+    <Router>
+      <AppWithNavbar />
     </Router>
   );
 }
-export default App;
