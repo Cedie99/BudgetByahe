@@ -7,21 +7,34 @@ import bbLogo from './assets/bb-logo.png';
 
 import {
   auth,
+  db,
   signInWithEmailAndPassword,
   signInWithPopup,
   googleProvider,
   facebookProvider,
+  doc,
+  setDoc,
 } from "./firebase";
+
+import NotificationModal from './components/NotificationModal';
 
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
+  // Notification modal state
+  const [showNotif, setShowNotif] = useState(false);
+  const [notifMessage, setNotifMessage] = useState('');
+  const [notifType, setNotifType] = useState('success');
+  // popup guard
+  const [popupInProgress, setPopupInProgress] = useState(false);
+
   let lastPage = localStorage.getItem("lastPage") || "/";
   let backLabel = "Previous Page";
 
-  if (lastPage === "/home") backLabel = "Home";
+  if (lastPage === "/") backLabel = "Home";
+  else if (lastPage.includes("home")) backLabel = "Home";
   else if (lastPage.includes("mainFeature")) backLabel = "Routes";
   else if (lastPage.includes("fare")) backLabel = "Fares";
   else if (lastPage.includes("map")) backLabel = "Map";
@@ -36,46 +49,126 @@ function Login() {
       localStorage.setItem('auth', 'true');
       localStorage.setItem('firebase_id_token', idToken);
 
-      navigate('/mainFeature');
+      // show success notification then navigate when modal closes
+      setNotifType('success');
+      setNotifMessage('Logged in successfully');
+      setShowNotif(true);
     } catch (error) {
-      console.error(error);
-      alert('Login failed: ' + error.message);
+      let errorMsg = 'An error occurred. Please try again.';
+      if (error.code === 'auth/user-not-found') {
+        errorMsg = 'No account found with this email. Please sign up first.';
+      } else if (error.code === 'auth/wrong-password') {
+        errorMsg = 'Incorrect password. Please try again.';
+      } else if (error.code === 'auth/invalid-email') {
+        errorMsg = 'Please enter a valid email address.';
+      } else if (error.code === 'auth/user-disabled') {
+        errorMsg = 'This account has been disabled.';
+      } else if (error.code === 'auth/too-many-requests') {
+        errorMsg = 'Too many failed attempts. Please try again later.';
+      } else if (error.code === 'auth/invalid-credential') {
+        errorMsg = 'Invalid email or password. Please check and try again.';
+      }
+      
+      setNotifType('error');
+      setNotifMessage(errorMsg);
+      setShowNotif(true);
     }
   };
 
   // --- Google Login ---
   const handleGoogle = async () => {
+    if (popupInProgress) return;
+    setPopupInProgress(true);
     try {
       const result = await signInWithPopup(auth, googleProvider);
-      const idToken = await result.user.getIdToken();
+      const user = result.user;
 
+      // Save Google user to Firestore (or update if exists)
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        firstName: user.displayName?.split(" ")[0] || "",
+        lastName: user.displayName?.split(" ")[1] || "",
+        email: user.email,
+        photoURL: user.photoURL,
+        provider: "google",
+        lastLogin: new Date(),
+      }, { merge: true }); // merge: true will update if exists, create if not
+
+      const idToken = await user.getIdToken();
       localStorage.setItem("auth", "true");
       localStorage.setItem("firebase_id_token", idToken);
 
-      navigate("/mainFeature");
+      setNotifType('success');
+      setNotifMessage('Logged in successfully');
+      setShowNotif(true);
     } catch (error) {
-      console.error(error);
-      alert("Google login failed: " + error.message);
+      let errorMsg = 'Google login failed. Please try again.';
+      if (error.code === 'auth/popup-closed-by-user') {
+        errorMsg = 'Login cancelled. Please try again if you want to continue.';
+      } else if (error.code === 'auth/popup-blocked') {
+        errorMsg = 'Popup was blocked. Please allow popups and try again.';
+      } else if (error.code === 'auth/account-exists-with-different-credential') {
+        errorMsg = 'An account already exists with this email using a different sign-in method.';
+      } else if (error.code === 'permission-denied') {
+        errorMsg = 'Unable to save your profile. Please contact support.';
+      }
+      
+      setNotifType('error');
+      setNotifMessage(errorMsg);
+      setShowNotif(true);
+    } finally {
+      setPopupInProgress(false);
     }
   };
 
   // --- Facebook Login ---
   const handleFacebook = async () => {
+    if (popupInProgress) return;
+    setPopupInProgress(true);
     try {
       const result = await signInWithPopup(auth, facebookProvider);
-      const idToken = await result.user.getIdToken();
+      const user = result.user;
 
+      // Save Facebook user to Firestore (or update if exists)
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        firstName: user.displayName?.split(" ")[0] || "",
+        lastName: user.displayName?.split(" ")[1] || "",
+        email: user.email,
+        photoURL: user.photoURL,
+        provider: "facebook",
+        lastLogin: new Date(),
+      }, { merge: true }); // merge: true will update if exists, create if not
+
+      const idToken = await user.getIdToken();
       localStorage.setItem("auth", "true");
       localStorage.setItem("firebase_id_token", idToken);
 
-      navigate("/mainFeature");
+      setNotifType('success');
+      setNotifMessage('Logged in successfully');
+      setShowNotif(true);
     } catch (error) {
-      console.error(error);
-      alert("Facebook login failed: " + error.message);
+      let errorMsg = 'Facebook login failed. Please try again.';
+      if (error.code === 'auth/popup-closed-by-user') {
+        errorMsg = 'Login cancelled. Please try again if you want to continue.';
+      } else if (error.code === 'auth/popup-blocked') {
+        errorMsg = 'Popup was blocked. Please allow popups and try again.';
+      } else if (error.code === 'auth/account-exists-with-different-credential') {
+        errorMsg = 'An account already exists with this email using a different sign-in method.';
+      } else if (error.code === 'permission-denied') {
+        errorMsg = 'Unable to save your profile. Please contact support.';
+      }
+      
+      setNotifType('error');
+      setNotifMessage(errorMsg);
+      setShowNotif(true);
+    } finally {
+      setPopupInProgress(false);
     }
   };
 
   return (
+    <>
     <div className="auth-page">
       <div className="auth-card">
         <button
@@ -149,6 +242,17 @@ function Login() {
         </div>
       </div>
     </div>
+      {showNotif && (
+        <NotificationModal
+          type={notifType}
+          message={notifMessage}
+          onClose={() => {
+            setShowNotif(false);
+            if (notifType === 'success') navigate('/mainFeature');
+          }}
+        />
+      )}
+    </>
   );
 }
 
