@@ -65,6 +65,11 @@ html, body, #root {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
+.panel-toggle:hover
+{
+  background-color: #0b5c35;
+}
+
 .toggle-icon {
     position: absolute;
     transition: opacity 0.3s, transform 0.3s;
@@ -158,7 +163,7 @@ html, body, #root {
 }
 
 .input-group button:hover {
-  background-color: #059669;
+  background-color: #0b5c35;
 }
 
 
@@ -282,6 +287,10 @@ html, body, #root {
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
+.transport-info h4 {
+  margin-bottom: 16px;
+}
+
 .transport-info p {
   color: #1e293b;
   font-size: 14px;
@@ -290,20 +299,20 @@ html, body, #root {
   white-space: pre-line;
 }
 
-/* Style for different message types */
+
 .transport-info p:first-child {
   font-size: 16px;
   margin-bottom: 8px;
 }
 
-/* Style for step indicators */
+
 .transport-info p:contains("STEP") {
   font-weight: 600;
   margin: 12px 0 4px 0;
   color: #0f172a;
 }
 
-/* Style for tips and additional info */
+
 .transport-info p:contains("💡") {
   background: rgba(59, 130, 246, 0.05);
   padding: 8px 12px;
@@ -314,7 +323,7 @@ html, body, #root {
   color: #1e40af;
 }
 
-/* Style for success messages */
+
 .transport-info p:contains("✅") {
   background: rgba(16, 185, 129, 0.05);
   padding: 12px 16px;
@@ -324,7 +333,7 @@ html, body, #root {
   font-weight: 600;
 }
 
-/* Style for warning messages */
+
 .transport-info p:contains("⚠️") {
   background: rgba(245, 158, 11, 0.05);
   padding: 12px 16px;
@@ -334,7 +343,7 @@ html, body, #root {
   font-weight: 600;
 }
 
-/* Style for fare information */
+
 .transport-info p:contains("💰") {
   background: rgba(139, 92, 246, 0.05);
   padding: 6px 10px;
@@ -346,7 +355,7 @@ html, body, #root {
   margin: 4px 0;
 }
 
-/* Custom Scrollbar Styling */
+
 .transport-info::-webkit-scrollbar {
   width: 5px;
 }
@@ -366,12 +375,15 @@ html, body, #root {
 }
 
 .clear-input {
-  font-size: 12px;
-  display: block;
-  color: #4a5568;
-  text-decoration: underline;
-  text-align: right;
-  cursor: pointer;
+    font-size: 12px;
+    display: block;
+    color: #4a5568;
+    text-decoration: underline;
+    cursor: pointer;
+    max-width: 50px;
+    width: 100%; 
+    margin-left: auto; 
+    text-align: right; 
 }
 
 .discount-section {
@@ -620,4 +632,249 @@ html, body, #root {
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+
+
+
+/* --- Skeleton Loading Styles --- */
+@keyframes loading-shimmer {
+    0% {
+        background-position: -468px 0;
+    }
+    100% {
+        background-position: 468px 0;
+    }
+}
+
+
+.skeleton-line {
+    animation: loading-shimmer 2.5s infinite linear;
+    background: #f6f7f8; 
+    background: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%);
+    background-size: 800px 104px; 
+    position: relative;
+    border-radius: 4px;
+    margin: 8px 0;
+}
+
+.skeleton-title {
+    height: 18px;
+    width: 80%;
+}
+
+
+.skeleton-step {
+    height: 14px;
+    width: 95%;
+}
+
+.skeleton-step-short {
+    height: 14px;
+    width: 60%;
+}
+
+
+
+/* ========================================= */
+/* ===== TUTORIAL / WALKTHROUGH STYLES ===== */
+/* ========================================= */
+
+.tutorial-overlay {
+position: fixed;
+top: 0;
+left: 0;
+width: 100vw;
+height: 100vh;
+background-color: rgba(0, 0, 0, 0.65);
+z-index: 1000;
+pointer-events: none; 
+}
+
+.tutorial-window {
+position: fixed;
+background: #fff;
+color: #333;
+padding: 20px;
+border-radius: 12px; 
+box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4); 
+max-width: 320px;
+z-index: 1002;
+transition: all 0.5s ease-in-out; 
+pointer-events: auto;
+}
+
+.tutorial-window h3 {
+color: #0d7a49; 
+font-size: 1.3rem;
+margin-bottom: 8px;
+border-bottom: 2px solid #e6ffe6; 
+padding-bottom: 5px;
+}
+
+.tutorial-window p {
+font-size: 0.95rem;
+line-height: 1.6;
+margin-bottom: 15px;
+}
+
+.tutorial-footer {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-top: 15px;
+padding-top: 10px;
+border-top: 1px solid #eee;
+}
+
+.tutorial-skip-btn {
+background: transparent;
+border: none;
+color: #555;
+cursor: pointer;
+font-size: 0.85rem;
+text-decoration: none;
+padding: 5px 0;
+transition: color 0.2s;
+}
+
+.tutorial-skip-btn:hover {
+color: #0b5c35;
+}
+
+.tutorial-navigation {
+display: flex;
+gap: 10px;
+}
+
+.tutorial-nav-btn {
+padding: 8px 18px;
+border: none;
+border-radius: 8px;
+cursor: pointer;
+font-weight: 600;
+font-size: 0.9rem;
+transition: background-color 0.2s, transform 0.1s;
+}
+
+.tutorial-nav-btn.next {
+background: #0d7a49;
+color: #fff;
+}
+
+.tutorial-nav-btn.next:hover {
+background: #0b5c35;
+}
+
+.tutorial-nav-btn.back {
+background: #f0f0f0;
+color: #333;
+}
+
+
+.tutorial-highlight-glow {
+box-shadow: 0 0 0 4px rgba(13, 122, 73, 0.4), 
+0 0 10px rgba(13, 122, 73, 0.8);
+transition: box-shadow 0.3s ease-in-out;
+border-radius: 8px; 
+position: relative;
+z-index: 1001; 
+}
+
+.tutorial-window::before {
+content: '';
+position: absolute;
+width: 0;
+height: 0;
+border: 10px solid transparent; 
+transition: all 0.5s ease-in-out;
+z-index: 1003;
+}
+
+.tutorial-window.intro::before,
+.tutorial-window.final-step::before {
+display: none;
+}
+
+.tutorial-window.origin::before,
+.tutorial-window.destination::before,
+.tutorial-window.discount::before,
+.tutorial-window.calculate-btn::before,
+.tutorial-window.panel-toggle::before {
+left: -20px; 
+top: 20px;
+border-right-color: #fff; 
+}
+
+.tutorial-window.panel-toggle::before {
+top: 15px; 
+}
+
+.tutorial-window.intro {
+top: 50% !important; 
+left: 50% !important;
+transform: translate(-50%, -50%);
+text-align: center;
+max-width: 400px;
+}
+
+
+.tutorial-window.origin {
+top: 280px;
+left: 420px; 
+}
+
+
+.tutorial-window.destination {
+top: 340px; 
+left: 420px;
+}
+
+
+.tutorial-window.discount { 
+top: 490px; 
+left: 420px;
+}
+
+
+.tutorial-window.calculate-btn { 
+top: 560px; 
+left: 420px;
+}
+
+
+.tutorial-window.panel-toggle {
+top: 50px;
+left: 450px;
+}
+
+
+.tutorial-window.final-step {
+top: 50% !important; 
+left: 50% !important;
+transform: translate(-50%, -50%);
+text-align: center;
+max-width: 400px;
+}
+
+.tutorial-window.final-step .tutorial-footer {
+justify-content: center;
+gap: 20px;
+}
+.tutorial-window.final-step .tutorial-skip-btn {
+display: none; 
+}
+
+
+@media (max-width: 900px) {
+.tutorial-window {
+top: 50% !important;
+left: 50% !important;
+transform: translate(-50%, -50%);
+max-width: 90%;
+width: 90%;
+text-align: center;
+}
+.tutorial-window::before {
+display: none;
+}
 }
