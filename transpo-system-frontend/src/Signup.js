@@ -16,6 +16,8 @@ import {
   setDoc,
 } from "./firebase";
 
+import NotificationModal from './components/NotificationModal';
+
 function Signup() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -23,10 +25,18 @@ function Signup() {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
   
+  // Notification modal state
+  const [showNotif, setShowNotif] = useState(false);
+  const [notifMessage, setNotifMessage] = useState('');
+  const [notifType, setNotifType] = useState('success');
+  // popup guard
+  const [popupInProgress, setPopupInProgress] = useState(false);
+  
   let lastPage = localStorage.getItem("lastPage") || "/";
   let backLabel = "Previous Page";
 
-  if (lastPage === "/home") backLabel = "Home";
+  if (lastPage === "/") backLabel = "Home";
+  else if (lastPage.includes("home")) backLabel = "Home";
   else if (lastPage.includes("mainFeature")) backLabel = "Routes";
   else if (lastPage.includes("fare")) backLabel = "Fares";
   else if (lastPage.includes("map")) backLabel = "Map";
@@ -54,15 +64,30 @@ function Signup() {
       localStorage.setItem("auth", "true");
       localStorage.setItem("firebase_id_token", idToken);
 
-      navigate("/mainFeature");
+      setNotifType('success');
+      setNotifMessage('Signed up successfully');
+      setShowNotif(true);
     } catch (error) {
-      console.error(error);
-      alert("Signup failed: " + error.message);
+      
+      let errorMsg = error.message;
+      if (error.code === 'auth/email-already-in-use') {
+        errorMsg = 'This email is already registered. Please log in instead.';
+      } else if (error.code === 'auth/weak-password') {
+        errorMsg = 'Password should be at least 6 characters.';
+      } else if (error.code === 'auth/invalid-email') {
+        errorMsg = 'Invalid email address.';
+      }
+      
+      setNotifType('error');
+      setNotifMessage(errorMsg);
+      setShowNotif(true);
     }
   };
 
   // --- GOOGLE SIGNUP ---
   const handleGoogle = async () => {
+    if (popupInProgress) return;
+    setPopupInProgress(true);
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
@@ -82,15 +107,33 @@ function Signup() {
       localStorage.setItem("auth", "true");
       localStorage.setItem("firebase_id_token", idToken);
 
-      navigate("/mainFeature");
+      setNotifType('success');
+      setNotifMessage('Signed up successfully');
+      setShowNotif(true);
     } catch (error) {
-      console.error(error);
-      alert("Google signup failed: " + error.message);
+      let errorMsg = 'Google signup failed. Please try again.';
+      if (error.code === 'auth/popup-closed-by-user') {
+        errorMsg = 'Signup cancelled. Please try again if you want to continue.';
+      } else if (error.code === 'auth/popup-blocked') {
+        errorMsg = 'Popup was blocked. Please allow popups and try again.';
+      } else if (error.code === 'auth/account-exists-with-different-credential') {
+        errorMsg = 'An account already exists with this email using a different sign-in method.';
+      } else if (error.code === 'permission-denied') {
+        errorMsg = 'Unable to save your profile. Please contact support.';
+      }
+      
+      setNotifType('error');
+      setNotifMessage(errorMsg);
+      setShowNotif(true);
+    } finally {
+      setPopupInProgress(false);
     }
   };
 
   // --- FACEBOOK SIGNUP ---
   const handleFacebook = async () => {
+    if (popupInProgress) return;
+    setPopupInProgress(true);
     try {
       const result = await signInWithPopup(auth, facebookProvider);
       const user = result.user;
@@ -110,14 +153,31 @@ function Signup() {
       localStorage.setItem("auth", "true");
       localStorage.setItem("firebase_id_token", idToken);
 
-      navigate("/mainFeature");
+      setNotifType('success');
+      setNotifMessage('Signed up successfully');
+      setShowNotif(true);
     } catch (error) {
-      console.error(error);
-      alert("Facebook signup failed: " + error.message);
+      let errorMsg = 'Facebook signup failed. Please try again.';
+      if (error.code === 'auth/popup-closed-by-user') {
+        errorMsg = 'Signup cancelled. Please try again if you want to continue.';
+      } else if (error.code === 'auth/popup-blocked') {
+        errorMsg = 'Popup was blocked. Please allow popups and try again.';
+      } else if (error.code === 'auth/account-exists-with-different-credential') {
+        errorMsg = 'An account already exists with this email using a different sign-in method.';
+      } else if (error.code === 'permission-denied') {
+        errorMsg = 'Unable to save your profile. Please contact support.';
+      }
+      
+      setNotifType('error');
+      setNotifMessage(errorMsg);
+      setShowNotif(true);
+    } finally {
+      setPopupInProgress(false);
     }
   };
 
   return (
+    <>
     <div className="auth-page">
       <div className="auth-card">
         <button
@@ -247,6 +307,17 @@ function Signup() {
         </div>
       </div>
     </div>
+      {showNotif && (
+        <NotificationModal
+          type={notifType}
+          message={notifMessage}
+          onClose={() => {
+            setShowNotif(false);
+            if (notifType === 'success') navigate('/login');
+          }}
+        />
+      )}
+    </>
   );
 }
 

@@ -17,16 +17,16 @@ function Fares() {
   }, []);
 
   const formatDate = (isoDate) => {
-  if (!isoDate) return "";
-  const date = new Date(isoDate);
-  return date.toLocaleString("en-US", {
-    month: "long",
-    day: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
+    if (!isoDate) return "";
+    const date = new Date(isoDate);
+    return date.toLocaleString("en-US", {
+      month: "long",
+      day: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
 
   const renderTable = (tableData, title, uploadedAt) => {
     if (!tableData || tableData.length === 0)
@@ -36,9 +36,6 @@ function Fares() {
 
     return (
       <div className="fares-table-wrapper">
-        <div className="effective-date">
-          Effective as of {formatDate(uploadedAt)}
-        </div>
         <table className="fares-table">
           <thead>
             <tr>
@@ -61,33 +58,43 @@ function Fares() {
     );
   };
 
+  const activeData = activeTab === "LTFRB" ? ltfrb : lgu;
+
   return (
     <div className="container">
-        <div className="fares-container">
-                <h2>Fare Matrix Guide</h2>
-                    <p className="matrix-p">Stay informed with the latest fare matrix updates for both LTFRB and LGU-regulated routes. This guide provides transparent, up-to-date fare details for 
-                    public transport services — ensuring passengers and operators have easy access to accurate fare information anytime.</p>
-                <div className="fares-tabs">
-            <button
-                className={`tab-btn ${activeTab === "LTFRB" ? "active" : ""}`}
-                onClick={() => setActiveTab("LTFRB")}
-            >
-                <FaBus className="tab-icon" /> LTFRB
-            </button>
-            <button
-                className={`tab-btn ${activeTab === "LGU" ? "active" : ""}`}
-                onClick={() => setActiveTab("LGU")}
-            >
-                <FaCity className="tab-icon" /> LGU
-            </button>
+      <div className="fares-container">
+        <h2>Fare Matrix Guide</h2>
+        <p className="matrix-p">
+          Stay informed with the latest fare matrix updates for both LTFRB and LGU-regulated routes.
+          This guide provides transparent, up-to-date fare details for public transport services —
+          ensuring passengers and operators have easy access to accurate fare information anytime.
+        </p>
+
+        <div className="table-header">
+          <div className="effective-date">
+            Effective as of {formatDate(activeData.uploadedAt)}
+          </div>
+
+          <select
+            className="fare-select"
+            value={activeTab}
+            onChange={(e) => setActiveTab(e.target.value)}
+          >
+            <option value="LTFRB">LTFRB Fare for Jeepney</option>
+            <option value="LGU">Santa Maria TODA Fare Matrix</option>
+          </select>
         </div>
-            <div className="tab-content">
-                {activeTab === "LTFRB" &&
-                renderTable(ltfrb.data, "LTFRB", ltfrb.uploadedAt)}
-                {activeTab === "LGU" && renderTable(lgu.data, "LGU", lgu.uploadedAt)}
-            </div>
-        </div>
-        <Footer/>
+      <div className="fare-matrix">
+        <h3 className="table-title">
+            {activeTab === "LTFRB" ? "LTFRB Fare for Jeepney" : "Santa Maria TODA Fare Matrix"}
+        </h3>
+        {activeTab === "LTFRB" &&
+          renderTable(ltfrb.data, "LTFRB", ltfrb.uploadedAt)}
+        {activeTab === "LGU" &&
+          renderTable(lgu.data, "LGU", lgu.uploadedAt)}
+      </div>
+      </div>
+      <Footer />
     </div>
   );
 }

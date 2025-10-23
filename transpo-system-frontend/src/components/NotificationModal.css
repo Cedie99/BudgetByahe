@@ -1,0 +1,71 @@
+.notification-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+.notification-modal {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  width: 320px;
+  padding: 20px;
+  text-align: center;
+  animation: fadeIn 0.3s ease;
+}
+
+.notification-modal.success {
+  border-top: 6px solid #0d7a49;
+}
+
+.notification-modal.error {
+  border-top: 6px solid #d9534f;
+}
+
+.notification-header {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #0d7a49;
+  margin-bottom: 10px;
+}
+
+.notification-modal.error .notification-header {
+  color: #d9534f;
+}
+
+.notification-body {
+  color: #333;
+  font-size: 0.95rem;
+  margin-bottom: 15px;
+}
+
+.notification-btn {
+  background-color: #0d7a49;
+  color: #fff;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.notification-btn:hover {
+  background-color: #0a633a;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
