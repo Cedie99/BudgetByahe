@@ -31,6 +31,9 @@ function Signup() {
   const [notifType, setNotifType] = useState('success');
   // popup guard
   const [popupInProgress, setPopupInProgress] = useState(false);
+  // Loading states for social login buttons
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [facebookLoading, setFacebookLoading] = useState(false);
   
   let lastPage = localStorage.getItem("lastPage") || "/";
   let backLabel = "Previous Page";
@@ -59,6 +62,12 @@ function Signup() {
         provider: "password",
       });
 
+      // Store user data in localStorage
+      localStorage.setItem('userFirstName', firstName);
+      localStorage.setItem('userLastName', lastName);
+      localStorage.setItem('userEmail', email);
+      localStorage.setItem('userId', user.uid);
+
       // Store login token locally
       const idToken = await user.getIdToken();
       localStorage.setItem("auth", "true");
@@ -86,23 +95,44 @@ function Signup() {
 
   // --- GOOGLE SIGNUP ---
   const handleGoogle = async () => {
-    if (popupInProgress) return;
+    if (popupInProgress) {
+      return;
+    }
+    
     setPopupInProgress(true);
+    setGoogleLoading(true);
+    
+    // Safety timeout to reset loading state after 10 seconds
+    const timeoutId = setTimeout(() => {
+      setGoogleLoading(false);
+      setPopupInProgress(false);
+    }, 10000);
+    
     try {
       const result = await signInWithPopup(auth, googleProvider);
+      clearTimeout(timeoutId);
       const user = result.user;
 
       // Save Google user to Firestore
+      const firstName = user.displayName?.split(" ")[0] || "";
+      const lastName = user.displayName?.split(" ")[1] || "";
+      
       await setDoc(doc(db, "users", user.uid), {
         uid: user.uid,
-        firstName: user.displayName?.split(" ")[0] || "",
-        lastName: user.displayName?.split(" ")[1] || "",
+        firstName,
+        lastName,
         email: user.email,
         photoURL: user.photoURL,
         provider: "google",
         createdAt: new Date(),
       });
 
+      // Store user data in localStorage
+      localStorage.setItem('userFirstName', firstName);
+      localStorage.setItem('userLastName', lastName);
+      localStorage.setItem('userEmail', user.email);
+      localStorage.setItem('userId', user.uid);
+
       const idToken = await user.getIdToken();
       localStorage.setItem("auth", "true");
       localStorage.setItem("firebase_id_token", idToken);
@@ -111,9 +141,14 @@ function Signup() {
       setNotifMessage('Signed up successfully');
       setShowNotif(true);
     } catch (error) {
+      clearTimeout(timeoutId);
       let errorMsg = 'Google signup failed. Please try again.';
+      
+      // Check for popup cancellation
       if (error.code === 'auth/popup-closed-by-user') {
-        errorMsg = 'Signup cancelled. Please try again if you want to continue.';
+        errorMsg = 'You closed the signup popup. Click the button again to try signing up.';
+      } else if (error.code === 'auth/cancelled-popup-request') {
+        errorMsg = 'The signup process was cancelled.';
       } else if (error.code === 'auth/popup-blocked') {
         errorMsg = 'Popup was blocked. Please allow popups and try again.';
       } else if (error.code === 'auth/account-exists-with-different-credential') {
@@ -122,33 +157,57 @@ function Signup() {
         errorMsg = 'Unable to save your profile. Please contact support.';
       }
       
+      // Always show notification on error
       setNotifType('error');
       setNotifMessage(errorMsg);
       setShowNotif(true);
     } finally {
+      clearTimeout(timeoutId);
       setPopupInProgress(false);
+      setGoogleLoading(false);
     }
   };
 
   // --- FACEBOOK SIGNUP ---
   const handleFacebook = async () => {
-    if (popupInProgress) return;
+    if (popupInProgress) {
+      return;
+    }
+    
     setPopupInProgress(true);
+    setFacebookLoading(true);
+
+    // Safety timeout to reset loading state after 10 seconds
+    const timeoutId = setTimeout(() => {
+      setFacebookLoading(false);
+      setPopupInProgress(false);
+    }, 10000);
+    
     try {
       const result = await signInWithPopup(auth, facebookProvider);
+      clearTimeout(timeoutId);
       const user = result.user;
 
       // Save Facebook user to Firestore
+      const firstName = user.displayName?.split(" ")[0] || "";
+      const lastName = user.displayName?.split(" ")[1] || "";
+      
       await setDoc(doc(db, "users", user.uid), {
         uid: user.uid,
-        firstName: user.displayName?.split(" ")[0] || "",
-        lastName: user.displayName?.split(" ")[1] || "",
+        firstName,
+        lastName,
         email: user.email,
         photoURL: user.photoURL,
         provider: "facebook",
         createdAt: new Date(),
       });
 
+      // Store user data in localStorage
+      localStorage.setItem('userFirstName', firstName);
+      localStorage.setItem('userLastName', lastName);
+      localStorage.setItem('userEmail', user.email);
+      localStorage.setItem('userId', user.uid);
+
       const idToken = await user.getIdToken();
       localStorage.setItem("auth", "true");
       localStorage.setItem("firebase_id_token", idToken);
@@ -157,9 +216,14 @@ function Signup() {
       setNotifMessage('Signed up successfully');
       setShowNotif(true);
     } catch (error) {
+      clearTimeout(timeoutId);
       let errorMsg = 'Facebook signup failed. Please try again.';
+      
+      // Check for popup cancellation
       if (error.code === 'auth/popup-closed-by-user') {
-        errorMsg = 'Signup cancelled. Please try again if you want to continue.';
+        errorMsg = 'You closed the signup popup. Click the button again to try signing up.';
+      } else if (error.code === 'auth/cancelled-popup-request') {
+        errorMsg = 'The signup process was cancelled.';
       } else if (error.code === 'auth/popup-blocked') {
         errorMsg = 'Popup was blocked. Please allow popups and try again.';
       } else if (error.code === 'auth/account-exists-with-different-credential') {
@@ -168,11 +232,14 @@ function Signup() {
         errorMsg = 'Unable to save your profile. Please contact support.';
       }
       
+      // Always show notification on error
       setNotifType('error');
       setNotifMessage(errorMsg);
       setShowNotif(true);
     } finally {
+      clearTimeout(timeoutId);
       setPopupInProgress(false);
+      setFacebookLoading(false);
     }
   };
 
@@ -275,17 +342,27 @@ function Signup() {
                 type="button"
                 className="social-btn social-google"
                 onClick={handleGoogle}
+                disabled={googleLoading || facebookLoading}
                 aria-label="Sign up with Google"
               >
-                <img src={googleLogo} alt="Google" style={{ width: 22, height: 22 }} />
+                {googleLoading ? (
+                  <div className="auth-spinner"></div>
+                ) : (
+                  <img src={googleLogo} alt="Google" style={{ width: 22, height: 22 }} />
+                )}
               </button>
               <button
                 type="button"
                 className="social-btn social-fb"
                 onClick={handleFacebook}
+                disabled={googleLoading || facebookLoading}
                 aria-label="Sign up with Facebook"
               >
-                <img src={fbLogo} alt="Facebook" style={{ width: 20, height: 20 }} />
+                {facebookLoading ? (
+                  <div className="auth-spinner"></div>
+                ) : (
+                  <img src={fbLogo} alt="Facebook" style={{ width: 20, height: 20 }} />
+                )}
               </button>
             </div>
           </form>

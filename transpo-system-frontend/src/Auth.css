@@ -229,3 +229,31 @@
 .auth-card {
   position: relative;
 }
+
+/* Loading Spinner Animation */
+.auth-spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* Google button spinner - dark color for visibility on white background */
+.social-google .auth-spinner {
+  border: 2.5px solid rgba(13, 122, 73, 0.2);
+  border-top-color: #0d7a49;
+}
+
+/* Facebook button spinner - white on blue background */
+.social-fb .auth-spinner {
+  border: 2.5px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

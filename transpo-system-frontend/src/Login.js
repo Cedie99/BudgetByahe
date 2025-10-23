@@ -14,6 +14,7 @@ import {
   facebookProvider,
   doc,
   setDoc,
+  getDoc,
 } from "./firebase";
 
 import NotificationModal from './components/NotificationModal';
@@ -29,6 +30,9 @@ function Login() {
   const [notifType, setNotifType] = useState('success');
   // popup guard
   const [popupInProgress, setPopupInProgress] = useState(false);
+  // Loading states for social login buttons
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [facebookLoading, setFacebookLoading] = useState(false);
 
   let lastPage = localStorage.getItem("lastPage") || "/";
   let backLabel = "Previous Page";
@@ -44,7 +48,20 @@ function Login() {
     e.preventDefault();
     try {
       const userCred = await signInWithEmailAndPassword(auth, email, password);
-      const idToken = await userCred.user.getIdToken();
+      const user = userCred.user;
+      const idToken = await user.getIdToken();
+
+      // Get user data from Firestore
+      const userDocRef = doc(db, "users", user.uid);
+      const userDoc = await getDoc(userDocRef);
+      
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        localStorage.setItem('userFirstName', userData.firstName || '');
+        localStorage.setItem('userLastName', userData.lastName || '');
+        localStorage.setItem('userEmail', userData.email || user.email);
+        localStorage.setItem('userId', user.uid);
+      }
 
       localStorage.setItem('auth', 'true');
       localStorage.setItem('firebase_id_token', idToken);
@@ -77,23 +94,44 @@ function Login() {
 
   // --- Google Login ---
   const handleGoogle = async () => {
-    if (popupInProgress) return;
+    if (popupInProgress) {
+      return;
+    }
+    
     setPopupInProgress(true);
+    setGoogleLoading(true);
+
+    // Safety timeout to reset loading state after 10 seconds
+    const timeoutId = setTimeout(() => {
+      setGoogleLoading(false);
+      setPopupInProgress(false);
+    }, 10000);
+    
     try {
       const result = await signInWithPopup(auth, googleProvider);
+      clearTimeout(timeoutId);
       const user = result.user;
 
       // Save Google user to Firestore (or update if exists)
+      const firstName = user.displayName?.split(" ")[0] || "";
+      const lastName = user.displayName?.split(" ")[1] || "";
+      
       await setDoc(doc(db, "users", user.uid), {
         uid: user.uid,
-        firstName: user.displayName?.split(" ")[0] || "",
-        lastName: user.displayName?.split(" ")[1] || "",
+        firstName,
+        lastName,
         email: user.email,
         photoURL: user.photoURL,
         provider: "google",
         lastLogin: new Date(),
       }, { merge: true }); // merge: true will update if exists, create if not
 
+      // Save to localStorage
+      localStorage.setItem('userFirstName', firstName);
+      localStorage.setItem('userLastName', lastName);
+      localStorage.setItem('userEmail', user.email);
+      localStorage.setItem('userId', user.uid);
+
       const idToken = await user.getIdToken();
       localStorage.setItem("auth", "true");
       localStorage.setItem("firebase_id_token", idToken);
@@ -102,9 +140,14 @@ function Login() {
       setNotifMessage('Logged in successfully');
       setShowNotif(true);
     } catch (error) {
+      clearTimeout(timeoutId);
       let errorMsg = 'Google login failed. Please try again.';
+      
+      // Check for popup cancellation
       if (error.code === 'auth/popup-closed-by-user') {
-        errorMsg = 'Login cancelled. Please try again if you want to continue.';
+        errorMsg = 'You closed the login popup. Click the button again to try logging in.';
+      } else if (error.code === 'auth/cancelled-popup-request') {
+        errorMsg = 'The login process was cancelled.';
       } else if (error.code === 'auth/popup-blocked') {
         errorMsg = 'Popup was blocked. Please allow popups and try again.';
       } else if (error.code === 'auth/account-exists-with-different-credential') {
@@ -113,33 +156,57 @@ function Login() {
         errorMsg = 'Unable to save your profile. Please contact support.';
       }
       
+      // Always show notification on error
       setNotifType('error');
       setNotifMessage(errorMsg);
       setShowNotif(true);
     } finally {
+      clearTimeout(timeoutId);
       setPopupInProgress(false);
+      setGoogleLoading(false);
     }
   };
 
   // --- Facebook Login ---
   const handleFacebook = async () => {
-    if (popupInProgress) return;
+    if (popupInProgress) {
+      return;
+    }
+    
     setPopupInProgress(true);
+    setFacebookLoading(true);
+
+    // Safety timeout to reset loading state after 10 seconds
+    const timeoutId = setTimeout(() => {
+      setFacebookLoading(false);
+      setPopupInProgress(false);
+    }, 10000);
+    
     try {
       const result = await signInWithPopup(auth, facebookProvider);
+      clearTimeout(timeoutId);
       const user = result.user;
 
       // Save Facebook user to Firestore (or update if exists)
+      const firstName = user.displayName?.split(" ")[0] || "";
+      const lastName = user.displayName?.split(" ")[1] || "";
+      
       await setDoc(doc(db, "users", user.uid), {
         uid: user.uid,
-        firstName: user.displayName?.split(" ")[0] || "",
-        lastName: user.displayName?.split(" ")[1] || "",
+        firstName,
+        lastName,
         email: user.email,
         photoURL: user.photoURL,
         provider: "facebook",
         lastLogin: new Date(),
       }, { merge: true }); // merge: true will update if exists, create if not
 
+      // Save to localStorage
+      localStorage.setItem('userFirstName', firstName);
+      localStorage.setItem('userLastName', lastName);
+      localStorage.setItem('userEmail', user.email);
+      localStorage.setItem('userId', user.uid);
+
       const idToken = await user.getIdToken();
       localStorage.setItem("auth", "true");
       localStorage.setItem("firebase_id_token", idToken);
@@ -148,9 +215,14 @@ function Login() {
       setNotifMessage('Logged in successfully');
       setShowNotif(true);
     } catch (error) {
+      clearTimeout(timeoutId);
       let errorMsg = 'Facebook login failed. Please try again.';
+      
+      // Check for popup cancellation
       if (error.code === 'auth/popup-closed-by-user') {
-        errorMsg = 'Login cancelled. Please try again if you want to continue.';
+        errorMsg = 'You closed the login popup. Click the button again to try logging in.';
+      } else if (error.code === 'auth/cancelled-popup-request') {
+        errorMsg = 'The login process was cancelled.';
       } else if (error.code === 'auth/popup-blocked') {
         errorMsg = 'Popup was blocked. Please allow popups and try again.';
       } else if (error.code === 'auth/account-exists-with-different-credential') {
@@ -159,11 +231,14 @@ function Login() {
         errorMsg = 'Unable to save your profile. Please contact support.';
       }
       
+      // Always show notification on error
       setNotifType('error');
       setNotifMessage(errorMsg);
       setShowNotif(true);
     } finally {
+      clearTimeout(timeoutId);
       setPopupInProgress(false);
+      setFacebookLoading(false);
     }
   };
 
@@ -224,11 +299,19 @@ function Login() {
             <div className="social-label">login with</div>
 
             <div className="social-row">
-              <button type="button" className="social-btn social-google" onClick={handleGoogle}>
-                <img src={googleLogo} alt="Google" style={{width:22, height:22}} />
+              <button type="button" className="social-btn social-google" onClick={handleGoogle} disabled={googleLoading || facebookLoading}>
+                {googleLoading ? (
+                  <div className="auth-spinner"></div>
+                ) : (
+                  <img src={googleLogo} alt="Google" style={{width:22, height:22}} />
+                )}
               </button>
-              <button type="button" className="social-btn social-fb" onClick={handleFacebook}>
-                <img src={fbLogo} alt="Facebook" style={{width:20, height:20}} />
+              <button type="button" className="social-btn social-fb" onClick={handleFacebook} disabled={googleLoading || facebookLoading}>
+                {facebookLoading ? (
+                  <div className="auth-spinner"></div>
+                ) : (
+                  <img src={fbLogo} alt="Facebook" style={{width:20, height:20}} />
+                )}
               </button>
             </div>
           </form>
