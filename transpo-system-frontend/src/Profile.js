@@ -1,0 +1,379 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import './Profile.css';
+import { auth, signOut, db, doc, setDoc } from './firebase';
+import NotificationModal from './components/NotificationModal';
+
+function Profile() {
+  const navigate = useNavigate();
+  const [userFirstName, setUserFirstName] = useState('');
+  const [userLastName, setUserLastName] = useState('');
+  const [userEmail, setUserEmail] = useState('');
+  const [userId, setUserId] = useState('');
+  const [profilePicture, setProfilePicture] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedFirstName, setEditedFirstName] = useState('');
+  const [editedLastName, setEditedLastName] = useState('');
+  const [editedProfilePicture, setEditedProfilePicture] = useState('');
+  const [showNotif, setShowNotif] = useState(false);
+  const [notifMessage, setNotifMessage] = useState('');
+  const [notifType, setNotifType] = useState('success');
+  const [isSaving, setIsSaving] = useState(false);
+  const fileInputRef = React.useRef(null);
+
+  useEffect(() => {
+    // Check if user is logged in
+    const authStatus = localStorage.getItem('auth');
+    if (authStatus !== 'true') {
+      navigate('/login');
+      return;
+    }
+
+    // Load user data from localStorage
+    const firstName = localStorage.getItem('userFirstName') || '';
+    const lastName = localStorage.getItem('userLastName') || '';
+    const email = localStorage.getItem('userEmail') || '';
+    const id = localStorage.getItem('userId') || '';
+    const picture = localStorage.getItem('userProfilePicture') || '';
+
+    setUserFirstName(firstName);
+    setUserLastName(lastName);
+    setUserEmail(email);
+    setUserId(id);
+    setProfilePicture(picture);
+    setEditedFirstName(firstName);
+    setEditedLastName(lastName);
+    setEditedProfilePicture(picture);
+  }, [navigate]);
+
+  const handleResetPassword = () => {
+    // For now, show a notification. You can implement password reset functionality later
+    setNotifType('success');
+    setNotifMessage('Password reset link has been sent to your email!');
+    setShowNotif(true);
+  };
+
+  const handleEditToggle = () => {
+    if (isEditing) {
+      // Cancel editing - restore original values
+      setEditedFirstName(userFirstName);
+      setEditedLastName(userLastName);
+      setEditedProfilePicture(profilePicture);
+    }
+    setIsEditing(!isEditing);
+  };
+
+  const handleProfilePictureClick = () => {
+    if (isEditing && fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        setNotifType('error');
+        setNotifMessage('Please select a valid image file!');
+        setShowNotif(true);
+        // Reset file input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setNotifType('error');
+        setNotifMessage('Image size should be less than 5MB!');
+        setShowNotif(true);
+        // Reset file input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+        return;
+      }
+
+      // Convert to base64
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setEditedProfilePicture(reader.result);
+      };
+      reader.onerror = () => {
+        setNotifType('error');
+        setNotifMessage('Failed to read image file!');
+        setShowNotif(true);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveProfilePicture = () => {
+    setEditedProfilePicture('');
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleSaveChanges = async () => {
+    // Validation
+    if (!editedFirstName.trim() || !editedLastName.trim()) {
+      setNotifType('error');
+      setNotifMessage('First name and last name cannot be empty!');
+      setShowNotif(true);
+      return;
+    }
+
+    setIsSaving(true);
+
+    try {
+      // Update Firestore
+      const userDocRef = doc(db, 'users', userId);
+      await setDoc(userDocRef, {
+        firstName: editedFirstName.trim(),
+        lastName: editedLastName.trim(),
+        email: userEmail,
+        profilePicture: editedProfilePicture || ''
+      }, { merge: true });
+
+      // Update localStorage
+      localStorage.setItem('userFirstName', editedFirstName.trim());
+      localStorage.setItem('userLastName', editedLastName.trim());
+      localStorage.setItem('userProfilePicture', editedProfilePicture || '');
+
+      // Update state
+      setUserFirstName(editedFirstName.trim());
+      setUserLastName(editedLastName.trim());
+      setProfilePicture(editedProfilePicture);
+
+      // Trigger navbar update
+      window.dispatchEvent(new Event('storage'));
+
+      // Show success notification
+      setNotifType('success');
+      setNotifMessage('Profile updated successfully!');
+      setShowNotif(true);
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      setNotifType('error');
+      setNotifMessage('Failed to update profile. Please try again.');
+      setShowNotif(true);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      localStorage.removeItem('auth');
+      localStorage.removeItem('firebase_id_token');
+      localStorage.removeItem('userFirstName');
+      localStorage.removeItem('userLastName');
+      localStorage.removeItem('userEmail');
+      localStorage.removeItem('userId');
+      localStorage.removeItem('userProfilePicture');
+      
+      navigate('/home');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
+  // Get initials for avatar
+  const getInitials = () => {
+    const firstInitial = userFirstName ? userFirstName.charAt(0).toUpperCase() : '';
+    const lastInitial = userLastName ? userLastName.charAt(0).toUpperCase() : '';
+    return firstInitial + lastInitial;
+  };
+
+  // Get display picture (either uploaded or initials)
+  const displayPicture = isEditing ? editedProfilePicture : profilePicture;
+
+  return (
+    <>
+      <div className="profile-page">
+        <div className="profile-container">
+          <div className="profile-header">
+            <button 
+              className="back-btn"
+              onClick={() => navigate(-1)}
+              title="Go back"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+              </svg>
+            </button>
+            
+            <h1 className="profile-title">My Profile</h1>
+            
+            <button 
+              className={`edit-btn ${isEditing ? 'cancel' : ''}`}
+              onClick={handleEditToggle}
+              disabled={isSaving}
+              title={isEditing ? 'Cancel editing' : 'Edit profile'}
+            >
+              {isEditing ? (
+                <>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  Cancel
+                </>
+              ) : (
+                <>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
+                  </svg>
+                  Edit
+                </>
+              )}
+            </button>
+          </div>
+
+          <div className="profile-card">
+            <div className="profile-avatar-section">
+              <div 
+                className={`profile-avatar ${isEditing ? 'editable' : ''}`}
+                onClick={handleProfilePictureClick}
+                title={isEditing ? 'Click to change profile picture' : ''}
+              >
+                {displayPicture ? (
+                  <img src={displayPicture} alt="Profile" className="profile-avatar-img" />
+                ) : (
+                  <span className="profile-initials">{getInitials()}</span>
+                )}
+                {isEditing && (
+                  <div className="avatar-edit-overlay">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
+                    </svg>
+                    <span>Change Photo</span>
+                  </div>
+                )}
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                style={{ display: 'none' }}
+              />
+              
+              {isEditing && editedProfilePicture && (
+                <button 
+                  className="btn-remove-picture"
+                  onClick={handleRemoveProfilePicture}
+                  title="Remove profile picture"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                  </svg>
+                  Remove Picture
+                </button>
+              )}
+            </div>
+
+            <div className="profile-info">
+              <div className="profile-field">
+                <label>First Name</label>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    className="profile-input"
+                    value={editedFirstName}
+                    onChange={(e) => setEditedFirstName(e.target.value)}
+                    placeholder="Enter first name"
+                  />
+                ) : (
+                  <div className="profile-value">{userFirstName || 'N/A'}</div>
+                )}
+              </div>
+
+              <div className="profile-field">
+                <label>Last Name</label>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    className="profile-input"
+                    value={editedLastName}
+                    onChange={(e) => setEditedLastName(e.target.value)}
+                    placeholder="Enter last name"
+                  />
+                ) : (
+                  <div className="profile-value">{userLastName || 'N/A'}</div>
+                )}
+              </div>
+
+              <div className="profile-field">
+                <label>Email Address</label>
+                <div className="profile-value email-readonly">
+                  {userEmail || 'N/A'}
+                  {isEditing && <span className="readonly-badge">Read-only</span>}
+                </div>
+              </div>
+            </div>
+
+            <div className="profile-actions">
+              {isEditing ? (
+                <button 
+                  className="btn-save-changes" 
+                  onClick={handleSaveChanges}
+                  disabled={isSaving}
+                >
+                  {isSaving ? (
+                    <>
+                      <div className="save-spinner"></div>
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                      </svg>
+                      Save Changes
+                    </>
+                  )}
+                </button>
+              ) : (
+                <>
+                  <button className="btn-reset-password" onClick={handleResetPassword}>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                    </svg>
+                    Reset Password
+                  </button>
+
+                  <button className="btn-logout-profile" onClick={handleLogout}>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+                    </svg>
+                    Logout
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {showNotif && (
+        <NotificationModal
+          type={notifType}
+          message={notifMessage}
+          onClose={() => setShowNotif(false)}
+        />
+      )}
+    </>
+  );
+}
+
+export default Profile;
