@@ -23,9 +23,11 @@ function Home() {
 
 
   const [activeFAQ, setActiveFAQ] = React.useState(0);
-  const toggleFAQ = (index) => {
+  const answerRef = React.useRef([]);
+
+  const toggleFAQ = (index) =>{
     setActiveFAQ(activeFAQ === index ? null : index);
-  };
+  }
 
 
   return (
@@ -70,6 +72,12 @@ function Home() {
             See How it Works
           </button>
         </div>
+
+        <div className="scroll-indicator-creative" onClick={tutorialbtn}>
+            <img src={aboutImage} alt="Scroll Down" className="scroll-compass-img" /> 
+            <span className="scroll-text">SCROLL DOWN TO VIEW MORE</span>
+        </div>
+
       </section>
 
       {/* ===== Data Sources & Official References ===== */}
@@ -253,7 +261,7 @@ function Home() {
     </section>
 
     {/* ===== FAQ Section ===== */}
-    <section className="faq-section">
+    <section className="faq-section " >
       <div className="faq-layout">
 
         {/* LEFT SIDE - Title + Description */}
@@ -276,9 +284,17 @@ function Home() {
               <button className="faq-question" onClick={() => toggleFAQ(i)}>
                 {item.q}
               </button>
-              <div className="faq-answer">
-                <p>{item.a}</p>
-              </div>
+              <div
+                  className="faq-answer"
+                  ref={(el) => (answerRef.current[i] = el)}
+                  style={{
+                    height: activeFAQ === i ? `${answerRef.current[i]?.scrollHeight}px` : "0px",
+                    padding: activeFAQ === i ? "15px 20px" : "0 20px",
+                  }}
+                >
+                  <p>{item.a}</p>
+                </div>
+
             </div>
           ))}
         </div>
