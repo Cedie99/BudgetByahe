@@ -43,7 +43,7 @@
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 40px;
+  gap: 28px;
   list-style: none;
   transition: all 0.3s ease;
 }
@@ -79,34 +79,193 @@
 
 /* ---------- BUTTONS ---------- */
 .btn-login,
-.btn-signup {
+.btn-signup,
+.btn-logout {
   border: none;
   font-weight: 600;
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.25s ease;
-  padding: 8px 18px;
-  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  padding: 7px 16px;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .btn-login {
   background: transparent;
   color: #0d7a49;
-  border: 1px solid #0d7a49;
+  border: 1.5px solid #0d7a49;
+  box-shadow: none;
 }
 
 .btn-login:hover {
   background: #0d7a49;
   color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(13, 122, 73, 0.2);
 }
 
 .btn-signup {
-  background: #0d7a49;
+  background: linear-gradient(135deg, #0d7a49 0%, #0a5c36 100%);
   color: #fff;
+  border: none;
 }
 
 .btn-signup:hover {
-  background: #095c38;
+  background: linear-gradient(135deg, #0a5c36 0%, #084529 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(13, 122, 73, 0.25);
+}
+
+.btn-logout {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: #fff;
+  border: 1.5px solid transparent;
+}
+
+.btn-logout:hover {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(220, 38, 38, 0.25);
+}
+
+/* Icon styles for buttons */
+.login-icon,
+.signup-icon,
+.logout-icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* ---------- USER PROFILE SECTION ---------- */
+.user-dropdown-wrapper {
+  position: relative;
+}
+
+.user-profile-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  padding: 5px 12px;
+  border-radius: 50px;
+  border: 1.5px solid #0d7a49;
+  box-shadow: 0 1px 4px rgba(13, 122, 73, 0.12);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.user-profile-section:hover {
+  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+  box-shadow: 0 2px 8px rgba(13, 122, 73, 0.2);
+  transform: translateY(-1px);
+}
+
+.user-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0d7a49 0%, #0a5c36 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  box-shadow: 0 1px 3px rgba(13, 122, 73, 0.25);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.user-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.user-greeting {
+  color: #0d7a49;
+  font-weight: 700;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  letter-spacing: -0.2px;
+}
+
+.dropdown-arrow {
+  width: 16px;
+  height: 16px;
+  color: #0d7a49;
+  transition: transform 0.3s ease;
+}
+
+.dropdown-arrow.open {
+  transform: rotate(180deg);
+}
+
+/* Dropdown Menu */
+.user-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  padding: 8px;
+  min-width: 180px;
+  z-index: 1000;
+  animation: dropdownFadeIn 0.2s ease;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown-item {
+  width: 100%;
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.2s ease;
+}
+
+.dropdown-item:hover {
+  background: #f3f4f6;
+  color: #0d7a49;
+}
+
+.dropdown-item.logout-item {
+  color: #dc2626;
+}
+
+.dropdown-item.logout-item:hover {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.dropdown-item svg {
+  width: 18px;
+  height: 18px;
 }
 
 /* ---------- HAMBURGER MENU ---------- */
@@ -156,6 +315,7 @@
     padding: 40px 24px;
     box-shadow: -2px 0 10px rgba(0, 0, 0, 0.08);
     transition: right 0.3s ease;
+    gap: 16px;
   }
 
   .nav-links.active {
@@ -164,7 +324,7 @@
 
   .nav-links li {
     width: 100%;
-    margin-bottom: 20px;
+    margin-bottom: 12px;
   }
 
   .nav-links a {
@@ -172,8 +332,26 @@
   }
 
   .btn-login,
-  .btn-signup {
+  .btn-signup,
+  .btn-logout {
     width: 100%;
-    text-align: center;
+    justify-content: center;
+    padding: 12px 24px;
+  }
+
+  .user-profile-section {
+    width: 100%;
+    justify-content: center;
+    padding: 12px 20px;
+  }
+
+  .user-avatar {
+    width: 40px;
+    height: 40px;
+    font-size: 1.1rem;
+  }
+
+  .user-greeting {
+    font-size: 1rem;
   }
 }

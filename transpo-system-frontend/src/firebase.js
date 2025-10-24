@@ -6,9 +6,14 @@ import {
   signInWithEmailAndPassword,
   GoogleAuthProvider,
   FacebookAuthProvider,
-  signInWithPopup
+  signInWithPopup,
+  signOut,
+  onAuthStateChanged,
+  sendPasswordResetEmail,
+  verifyPasswordResetCode,
+  confirmPasswordReset
 } from "firebase/auth";
-import { getFirestore, doc, setDoc } from "firebase/firestore";
+import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyARHaydqTnTbk43YNriQ5gNDcQ0mQ2ExY0",
@@ -20,13 +25,11 @@ const firebaseConfig = {
   measurementId: "G-2MCZTVJ3V1",
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// ✅ Initialize Providers correctly
 const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: "select_account" });
 
@@ -38,8 +41,14 @@ export {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signInWithPopup,
+  signOut,
+  onAuthStateChanged,
+  sendPasswordResetEmail,
+  verifyPasswordResetCode,
+  confirmPasswordReset,
   googleProvider,
   facebookProvider,
   doc,
   setDoc,
+  getDoc,
 };
