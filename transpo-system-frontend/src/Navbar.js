@@ -119,23 +119,20 @@ const Navbar = ({ whiteBackground }) => {
           <li>
             <NavLink
               to="/home"
+              end
+              className={({ isActive }) => {
+                // Also check if we're at root path "/"
+                const isRootPath = window.location.pathname === "/";
+                return (isActive || isRootPath) ? "active-link" : "";
+              }}
               onClick={(e) => {
-                e.preventDefault(); // stop default navigation for a moment
                 closeMenu();
 
-                if (window.location.pathname === "/home") {
+                if (window.location.pathname === "/home" || window.location.pathname === "/") {
                   // If already on home, just scroll
+                  e.preventDefault();
                   const el = document.getElementById("landing");
                   if (el) el.scrollIntoView({ behavior: "smooth" });
-                } else {
-                  // If on another page, navigate then scroll
-                  window.location.href = "/home";
-
-                  // Delay scrolling slightly to ensure page loads first
-                  setTimeout(() => {
-                    const el = document.getElementById("landing");
-                    if (el) el.scrollIntoView({ behavior: "smooth" });
-                  }, 400);
                 }
               }}
             >
@@ -143,17 +140,32 @@ const Navbar = ({ whiteBackground }) => {
             </NavLink>
           </li>
           <li>
-            <NavLink to="/mainFeature" onClick={closeMenu}>
+            <NavLink 
+              to="/mainFeature"
+              end
+              className={({ isActive }) => (isActive ? "active-link" : "")}
+              onClick={closeMenu}
+            >
               Routes
             </NavLink>
           </li>
           <li>
-            <NavLink to="/fares" onClick={closeMenu}>
+            <NavLink 
+              to="/fares"
+              end
+              className={({ isActive }) => (isActive ? "active-link" : "")}
+              onClick={closeMenu}
+            >
               Fares
             </NavLink>
           </li>
           <li>
-            <NavLink to="/map" onClick={closeMenu}>
+            <NavLink 
+              to="/map"
+              end
+              className={({ isActive }) => (isActive ? "active-link" : "")}
+              onClick={closeMenu}
+            >
               Map
             </NavLink>
           </li>

@@ -1,0 +1,357 @@
+/* Map Page Styles */
+.map-page {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f8f9fa;
+  overflow: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.map-header {
+  background: linear-gradient(135deg, #0d7a49 0%, #0a5c36 100%);
+  color: white;
+  padding: 80px 40px 20px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1;
+  flex-shrink: 0;
+}
+
+.map-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0 0 10px 0;
+  letter-spacing: -0.5px;
+}
+
+.map-subtitle {
+  font-size: 1.1rem;
+  margin: 0;
+  opacity: 0.95;
+  font-weight: 400;
+}
+
+.map-container {
+  flex: 1;
+  width: 100%;
+  min-height: 500px;
+  position: relative;
+}
+
+/* Loading and Error States */
+.map-loading,
+.map-error {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  z-index: 10;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #f0fdf4;
+  border-top-color: #0d7a49;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 16px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.map-loading p {
+  color: #0d7a49;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.map-error {
+  background: white;
+  padding: 24px 32px;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.map-error p {
+  color: #dc2626;
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+/* Custom Marker Styles */
+.custom-marker {
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.2s ease;
+}
+
+.custom-marker:hover {
+  transform: scale(1.05);
+}
+
+.custom-marker:active {
+  transform: scale(0.95);
+}
+
+.marker-pin {
+  width: 0;
+  height: 0;
+  border-left: 15px solid transparent;
+  border-right: 15px solid transparent;
+  border-top: 40px solid #0d7a49;
+  position: relative;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+  animation: bounce 2s infinite;
+}
+
+.marker-pin::before {
+  content: '';
+  position: absolute;
+  top: -35px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  border: 3px solid #0d7a49;
+}
+
+.marker-label {
+  background: white;
+  color: #0d7a49;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 0.8rem;
+  margin-bottom: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  border: 2px solid #0d7a49;
+  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  cursor: pointer;
+  display: inline-block;
+  max-width: fit-content;
+}
+
+.marker-title {
+  display: inline-block;
+  white-space: nowrap;
+  transition: all 0.3s ease;
+}
+
+.marker-details {
+  display: none;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(13, 122, 73, 0.2);
+  opacity: 0;
+  transition: opacity 0.4s ease 0.1s;
+}
+
+.marker-details p {
+  margin: 3px 0;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: #666;
+  white-space: nowrap;
+  transform: translateY(-5px);
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.zoom-btn {
+  margin-top: 8px;
+  width: 100%;
+  padding: 6px 12px;
+  background: linear-gradient(135deg, #0d7a49 0%, #0a5c36 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(13, 122, 73, 0.3);
+}
+
+.zoom-btn:hover {
+  background: linear-gradient(135deg, #0a5c36 0%, #084528 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(13, 122, 73, 0.4);
+}
+
+.marker-label.expanded {
+  padding: 10px 14px;
+  min-width: 200px;
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.marker-label.expanded .marker-details {
+  display: block;
+  opacity: 1;
+}
+
+.marker-label.expanded .marker-details p {
+  transform: translateY(0);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.marker-label:hover ~ .marker-pin {
+  border-top-color: #0a5c36;
+  animation: none;
+}
+
+/* Popup Styles */
+.mapboxgl-popup-content {
+  background: white;
+  border-radius: 8px;
+  padding: 16px 20px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  border: 2px solid #0d7a49;
+}
+
+.marker-popup h3 {
+  margin: 0 0 8px 0;
+  color: #0d7a49;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.marker-popup p {
+  margin: 0 0 4px 0;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.zoom-button {
+  margin-top: 12px;
+  width: 100%;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #0d7a49 0%, #0a5c36 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(13, 122, 73, 0.3);
+}
+
+.zoom-button:hover {
+  background: linear-gradient(135deg, #0a5c36 0%, #084528 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(13, 122, 73, 0.4);
+}
+
+.zoom-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(13, 122, 73, 0.3);
+}
+
+.zoom-button span {
+  font-size: 1.1rem;
+}
+
+.mapboxgl-popup-tip {
+  border-top-color: #0d7a49 !important;
+}
+
+/* Map Controls Styling */
+.mapboxgl-ctrl-group {
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.mapboxgl-ctrl-group button {
+  width: 40px;
+  height: 40px;
+}
+
+.mapboxgl-ctrl-group button:hover {
+  background-color: #f0fdf4;
+}
+
+.mapboxgl-ctrl-icon {
+  color: #0d7a49;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .map-header {
+    padding: 80px 20px 20px;
+  }
+
+  .map-title {
+    font-size: 2rem;
+  }
+
+  .map-subtitle {
+    font-size: 1rem;
+  }
+
+  .marker-label {
+    font-size: 0.8rem;
+    padding: 5px 12px;
+  }
+
+  .marker-pin {
+    border-left-width: 12px;
+    border-right-width: 12px;
+    border-top-width: 35px;
+  }
+
+  .marker-pin::before {
+    width: 16px;
+    height: 16px;
+    top: -30px;
+  }
+}
+
+@media (max-width: 480px) {
+  .map-title {
+    font-size: 1.5rem;
+  }
+
+  .map-subtitle {
+    font-size: 0.9rem;
+  }
+}

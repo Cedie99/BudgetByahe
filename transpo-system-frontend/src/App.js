@@ -9,13 +9,15 @@ import Fares from './Fares';
 import Login from './Login';
 import Signup from './Signup';
 import Profile from './Profile';
+import Map from './Map';
+import ResetPassword from './ResetPassword';
 import ChatbotWidget from './components/ChatbotWidget';
 import { auth, onAuthStateChanged, db, doc, getDoc } from './firebase';
 
 function AppWithNavbar() {
   const location = useLocation();
-  const hideNavbarPaths = ["/login", "/signup"];
-  const hideChatbotPaths = ["/login", "/signup", "/mainFeature"];
+  const hideNavbarPaths = ["/login", "/signup", "/reset-password"];
+  const hideChatbotPaths = ["/login", "/signup", "/mainFeature", "/reset-password"];
   const showNavbar = !hideNavbarPaths.includes(location.pathname);
   const showChatbot = !hideChatbotPaths.includes(location.pathname);
 
@@ -80,9 +82,11 @@ function AppWithNavbar() {
         <Route path="/mainFeature" element={<MainFeature />} /> 
         <Route path="/fareupload" element={<FareUpload />} />
         <Route path="/fares" element={<Fares />} />
+        <Route path="/map" element={<Map />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
       </Routes>
       {showChatbot && <ChatbotWidget />}
     </>

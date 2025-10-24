@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Profile.css';
-import { auth, signOut, db, doc, setDoc } from './firebase';
+import { auth, signOut, db, doc, setDoc, sendPasswordResetEmail } from './firebase';
 import NotificationModal from './components/NotificationModal';
 
 function Profile() {
@@ -46,11 +46,35 @@ function Profile() {
     setEditedProfilePicture(picture);
   }, [navigate]);
 
-  const handleResetPassword = () => {
-    // For now, show a notification. You can implement password reset functionality later
-    setNotifType('success');
-    setNotifMessage('Password reset link has been sent to your email!');
-    setShowNotif(true);
+  const handleResetPassword = async () => {
+    if (!userEmail) {
+      setNotifType('error');
+      setNotifMessage('Email address not found. Please log in again.');
+      setShowNotif(true);
+      return;
+    }
+
+    try {
+      await sendPasswordResetEmail(auth, userEmail);
+      setNotifType('success');
+      setNotifMessage('Password reset link has been sent to your email!');
+      setShowNotif(true);
+    } catch (error) {
+      console.error('Password reset error:', error);
+      let errorMsg = 'Failed to send password reset email. Please try again.';
+      
+      if (error.code === 'auth/user-not-found') {
+        errorMsg = 'No account found with this email address.';
+      } else if (error.code === 'auth/invalid-email') {
+        errorMsg = 'Invalid email address.';
+      } else if (error.code === 'auth/too-many-requests') {
+        errorMsg = 'Too many requests. Please try again later.';
+      }
+      
+      setNotifType('error');
+      setNotifMessage(errorMsg);
+      setShowNotif(true);
+    }
   };
 
   const handleEditToggle = () => {
@@ -213,7 +237,9 @@ function Profile() {
             </button>
             
             <h1 className="profile-title">My Profile</h1>
-            
+          </div>
+
+          <div className="profile-card">
             <button 
               className={`edit-btn ${isEditing ? 'cancel' : ''}`}
               onClick={handleEditToggle}
@@ -236,27 +262,30 @@ function Profile() {
                 </>
               )}
             </button>
-          </div>
 
-          <div className="profile-card">
             <div className="profile-avatar-section">
-              <div 
-                className={`profile-avatar ${isEditing ? 'editable' : ''}`}
-                onClick={handleProfilePictureClick}
-                title={isEditing ? 'Click to change profile picture' : ''}
-              >
-                {displayPicture ? (
-                  <img src={displayPicture} alt="Profile" className="profile-avatar-img" />
-                ) : (
-                  <span className="profile-initials">{getInitials()}</span>
-                )}
+              <div className="avatar-wrapper">
+                <div 
+                  className={`profile-avatar ${isEditing ? 'editable' : ''}`}
+                  onClick={handleProfilePictureClick}
+                  title={isEditing ? 'Click to change profile picture' : ''}
+                >
+                  {displayPicture ? (
+                    <img src={displayPicture} alt="Profile" className="profile-avatar-img" />
+                  ) : (
+                    <span className="profile-initials">{getInitials()}</span>
+                  )}
+                </div>
                 {isEditing && (
-                  <div className="avatar-edit-overlay">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
+                  <div 
+                    className="avatar-edit-badge"
+                    onClick={handleProfilePictureClick}
+                    title="Click to change photo"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 9a3.75 3.75 0 100 7.5A3.75 3.75 0 0012 9z" />
+                      <path fillRule="evenodd" d="M9.344 3.071a49.52 49.52 0 015.312 0c.967.052 1.83.585 2.332 1.39l.821 1.317c.24.383.645.643 1.11.71.386.054.77.113 1.152.177 1.432.239 2.429 1.493 2.429 2.909V18a3 3 0 01-3 3h-15a3 3 0 01-3-3V9.574c0-1.416.997-2.67 2.429-2.909.382-.064.766-.123 1.151-.178a1.56 1.56 0 001.11-.71l.822-1.315a2.942 2.942 0 012.332-1.39zM6.75 12.75a5.25 5.25 0 1110.5 0 5.25 5.25 0 01-10.5 0zm12-1.5a.75.75 0 100-1.5.75.75 0 000 1.5z" clipRule="evenodd" />
                     </svg>
-                    <span>Change Photo</span>
                   </div>
                 )}
               </div>
