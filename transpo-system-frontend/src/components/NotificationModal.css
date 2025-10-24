@@ -27,6 +27,10 @@
   border-top: 6px solid #d9534f;
 }
 
+.notification-modal.info {
+  border-top: 6px solid #3b82f6;
+}
+
 .notification-header {
   font-size: 1.2rem;
   font-weight: 600;
@@ -36,6 +40,10 @@
 
 .notification-modal.error .notification-header {
   color: #d9534f;
+}
+
+.notification-modal.info .notification-header {
+  color: #3b82f6;
 }
 
 .notification-body {

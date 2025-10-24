@@ -63,6 +63,7 @@ function Login() {
         localStorage.setItem('userLastName', userData.lastName || '');
         localStorage.setItem('userEmail', userData.email || user.email);
         localStorage.setItem('userId', user.uid);
+        localStorage.setItem('userProfilePicture', userData.profilePicture || '');
       }
 
       localStorage.setItem('auth', 'true');
@@ -128,11 +129,17 @@ function Login() {
         lastLogin: new Date(),
       }, { merge: true }); // merge: true will update if exists, create if not
 
+      // Get updated user data from Firestore to load custom profile picture if exists
+      const userDocRef = doc(db, "users", user.uid);
+      const userDoc = await getDoc(userDocRef);
+      const userData = userDoc.exists() ? userDoc.data() : {};
+
       // Save to localStorage
       localStorage.setItem('userFirstName', firstName);
       localStorage.setItem('userLastName', lastName);
       localStorage.setItem('userEmail', user.email);
       localStorage.setItem('userId', user.uid);
+      localStorage.setItem('userProfilePicture', userData.profilePicture || '');
 
       const idToken = await user.getIdToken();
       localStorage.setItem("auth", "true");
@@ -213,11 +220,17 @@ function Login() {
         lastLogin: new Date(),
       }, { merge: true }); // merge: true will update if exists, create if not
 
+      // Get updated user data from Firestore to load custom profile picture if exists
+      const userDocRef = doc(db, "users", user.uid);
+      const userDoc = await getDoc(userDocRef);
+      const userData = userDoc.exists() ? userDoc.data() : {};
+
       // Save to localStorage
       localStorage.setItem('userFirstName', firstName);
       localStorage.setItem('userLastName', lastName);
       localStorage.setItem('userEmail', user.email);
       localStorage.setItem('userId', user.uid);
+      localStorage.setItem('userProfilePicture', userData.profilePicture || '');
 
       const idToken = await user.getIdToken();
       localStorage.setItem("auth", "true");
