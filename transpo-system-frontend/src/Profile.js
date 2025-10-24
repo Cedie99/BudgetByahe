@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import './Profile.css';
 import { auth, signOut, db, doc, setDoc, sendPasswordResetEmail } from './firebase';
 import NotificationModal from './components/NotificationModal';
+import { compressImage, getBase64Size } from './utils/imageCompression';
 
 function Profile() {
   const navigate = useNavigate();
@@ -93,7 +94,7 @@ function Profile() {
     }
   };
 
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     const file = e.target.files?.[0];
     if (file) {
       // Validate file type
@@ -108,32 +109,40 @@ function Profile() {
         return;
       }
 
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        setNotifType('error');
-        setNotifMessage('Image size should be less than 5MB!');
+      try {
+        // Show loading state
+        setNotifType('info');
+        setNotifMessage('Compressing image...');
         setShowNotif(true);
+
+        // Compress image to max 1MB and 800x800 dimensions
+        const compressedImage = await compressImage(file, {
+          maxSizeMB: 1,
+          maxWidthOrHeight: 800,
+          quality: 0.85
+        });
+
+        // Verify the compressed size
+        const finalSize = getBase64Size(compressedImage);
+        console.log(`Compressed image size: ${finalSize.toFixed(2)} MB`);
+
+        setEditedProfilePicture(compressedImage);
+        
+        // Show success notification
+        setNotifType('success');
+        setNotifMessage(`Image uploaded and compressed to ${finalSize.toFixed(2)} MB!`);
+        setShowNotif(true);
+      } catch (error) {
+        console.error('Error compressing image:', error);
+        setNotifType('error');
+        setNotifMessage('Failed to process image. Please try another image.');
+        setShowNotif(true);
+        
         // Reset file input
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
         }
-        return;
       }
-
-      // Convert to base64
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setEditedProfilePicture(reader.result);
-      };
-      reader.onerror = () => {
-        setNotifType('error');
-        setNotifMessage('Failed to read image file!');
-        setShowNotif(true);
-        if (fileInputRef.current) {
-          fileInputRef.current.value = '';
-        }
-      };
-      reader.readAsDataURL(file);
     }
   };
 

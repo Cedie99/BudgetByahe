@@ -16,8 +16,8 @@ import { auth, onAuthStateChanged, db, doc, getDoc } from './firebase';
 
 function AppWithNavbar() {
   const location = useLocation();
-  const hideNavbarPaths = ["/login", "/signup", "/reset-password"];
-  const hideChatbotPaths = ["/login", "/signup", "/mainFeature", "/reset-password"];
+  const hideNavbarPaths = ["/login", "/signup", "/reset-password", "/__/auth/action"];
+  const hideChatbotPaths = ["/login", "/signup", "/mainFeature", "/reset-password", "/__/auth/action"];
   const showNavbar = !hideNavbarPaths.includes(location.pathname);
   const showChatbot = !hideChatbotPaths.includes(location.pathname);
 
@@ -87,6 +87,7 @@ function AppWithNavbar() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/__/auth/action" element={<ResetPassword />} />
       </Routes>
       {showChatbot && <ChatbotWidget />}
     </>

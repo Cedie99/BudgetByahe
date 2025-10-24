@@ -12,11 +12,17 @@ function NotificationModal({ type, message, onClose }) {
   }, [onClose]);
 
 
+  const getHeader = () => {
+    if (type === "success") return "✅ Success";
+    if (type === "info") return "ℹ️ Info";
+    return "⚠️ Error";
+  };
+
   return (
     <div className="notification-overlay">
       <div className={`notification-modal ${type}`}>
         <div className="notification-header">
-          {type === "success" ? "✅ Success" : "⚠️ Error"}
+          {getHeader()}
         </div>
         <div className="notification-body">{message}</div>
         <button className="notification-btn" onClick={onClose}>

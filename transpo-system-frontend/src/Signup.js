@@ -68,6 +68,7 @@ function Signup() {
       localStorage.setItem('userLastName', lastName);
       localStorage.setItem('userEmail', email);
       localStorage.setItem('userId', user.uid);
+      localStorage.setItem('userProfilePicture', '');
 
       // Store login token locally
       const idToken = await user.getIdToken();
@@ -133,6 +134,7 @@ function Signup() {
       localStorage.setItem('userLastName', lastName);
       localStorage.setItem('userEmail', user.email);
       localStorage.setItem('userId', user.uid);
+      localStorage.setItem('userProfilePicture', '');
 
       const idToken = await user.getIdToken();
       localStorage.setItem("auth", "true");
@@ -208,6 +210,7 @@ function Signup() {
       localStorage.setItem('userLastName', lastName);
       localStorage.setItem('userEmail', user.email);
       localStorage.setItem('userId', user.uid);
+      localStorage.setItem('userProfilePicture', '');
 
       const idToken = await user.getIdToken();
       localStorage.setItem("auth", "true");
