@@ -14,10 +14,17 @@ import ResetPassword from './ResetPassword';
 import ChatbotWidget from './components/ChatbotWidget';
 import { auth, onAuthStateChanged, db, doc, getDoc } from './firebase';
 
+// Admin Components
+import AdminLogin from './admin/AdminLogin';
+import AdminDashboard from './admin/AdminDashboard';
+import AdminRoutes from './admin/AdminRoutes';
+import AdminCMS from './admin/AdminCMS';
+import AdminFeedback from './admin/AdminFeedback';
+
 function AppWithNavbar() {
   const location = useLocation();
-  const hideNavbarPaths = ["/login", "/signup", "/reset-password", "/__/auth/action"];
-  const hideChatbotPaths = ["/login", "/signup", "/mainFeature", "/reset-password", "/__/auth/action"];
+  const hideNavbarPaths = ["/login", "/signup", "/reset-password", "/__/auth/action", "/admin/login", "/admin/dashboard", "/admin/routes", "/admin/cms", "/admin/feedback"];
+  const hideChatbotPaths = ["/login", "/signup", "/mainFeature", "/reset-password", "/__/auth/action", "/admin/login", "/admin/dashboard", "/admin/routes", "/admin/cms", "/admin/feedback"];
   const showNavbar = !hideNavbarPaths.includes(location.pathname);
   const showChatbot = !hideChatbotPaths.includes(location.pathname);
 
@@ -88,6 +95,13 @@ function AppWithNavbar() {
         <Route path="/profile" element={<Profile />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/__/auth/action" element={<ResetPassword />} />
+        
+        {/* Admin Routes */}
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/routes" element={<AdminRoutes />} />
+        <Route path="/admin/cms" element={<AdminCMS />} />
+        <Route path="/admin/feedback" element={<AdminFeedback />} />
       </Routes>
       {showChatbot && <ChatbotWidget />}
     </>
