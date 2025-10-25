@@ -13,7 +13,20 @@ import {
   verifyPasswordResetCode,
   confirmPasswordReset
 } from "firebase/auth";
-import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
+import { 
+  getFirestore, 
+  doc, 
+  setDoc, 
+  getDoc, 
+  collection, 
+  getDocs, 
+  addDoc, 
+  updateDoc, 
+  deleteDoc,
+  query,
+  orderBy,
+  limit
+} from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyARHaydqTnTbk43YNriQ5gNDcQ0mQ2ExY0",
@@ -51,4 +64,12 @@ export {
   doc,
   setDoc,
   getDoc,
+  collection,
+  getDocs,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  query,
+  orderBy,
+  limit,
 };
