@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import './Auth.css';
 import bbLogo from './assets/bb-logo.png';
@@ -22,6 +22,16 @@ function ResetPassword() {
 
   useEffect(() => {
     const code = searchParams.get('oobCode');
+    const mode = searchParams.get('mode');
+    
+    // Check if this is a password reset action
+    if (mode && mode !== 'resetPassword') {
+      setNotifType('error');
+      setNotifMessage('Invalid action type. This page is only for password reset.');
+      setShowNotif(true);
+      setIsLoading(false);
+      return;
+    }
     
     if (!code) {
       setNotifType('error');
