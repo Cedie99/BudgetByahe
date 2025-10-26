@@ -878,3 +878,80 @@ text-align: center;
 display: none;
 }
 }
+
+/* --- Route Legend Styles --- */
+
+.route-legend {
+    padding: 15px 0;
+    border-top: 1px solid #e0e0e0; 
+    margin-top: 15px;
+    font-size: 0.9em;
+    color: #5f6368;
+}
+
+.route-legend h4 {
+    margin-bottom: 10px;
+    font-size: 1.1em;
+    color: #3c4043;
+    font-weight: 600;
+    padding-bottom: 5px; 
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px; 
+}
+
+.legend-color {
+    display: inline-block;
+    width: 25px; 
+    height: 5px; 
+    margin-right: 10px;
+    border-radius: 3px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); 
+}
+
+.legend-transfer-point {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 16px; 
+    height: 16px;
+    margin-right: 10px;
+    background-color: #00A86B; 
+    border: 2px solid white; 
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); 
+}
+
+.legend-item p {
+    margin: 0;
+    line-height: 1.2;
+    color: #5f6368; 
+}
+
+
+@media (max-width: 768px) {
+    .fare-container {
+        width: 90%;
+        max-width: 100%;
+        height: auto;
+        max-height: 90%;
+        top: 10px;
+        left: 5%;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        transform: none !important; 
+    }
+
+    .fare-container.closed {
+        transform: translateY(-100%) !important;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .panel-toggle {
+        display: none; 
+    }
+}
