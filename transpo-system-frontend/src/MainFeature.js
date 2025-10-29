@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { GoogleMap, useJsApiLoader, DirectionsRenderer, Marker, Polyline } from '@react-google-maps/api';
-import { FaMapMarkerAlt, FaFlag, FaKeyboard, FaArrowRight, FaArrowLeft } from "react-icons/fa";
-import { IoCloseCircleOutline } from "react-icons/io5";
+import { FaMapMarkerAlt, FaFlag, FaKeyboard, FaArrowRight, FaArrowLeft, FaGasPump, FaMoneyBillWave } from "react-icons/fa";
+import { IoCloseCircleOutline, IoLocationSharp } from "react-icons/io5"; 
+import { MdOutlineDirectionsBus, MdLocalTaxi } from "react-icons/md"; 
 import './MainFeature.css';
 import switchLogo from './assets/loop.png';
 
@@ -10,13 +11,63 @@ const containerStyle = {
     height: '100vh'
 };
 
-
 const center = {
     lat: 14.86994, // Approximate latitude of Santa Maria town center
     lng: 121.00238 // Approximate longitude of Santa Maria town center
 };
 
 const libraries = ['places'];
+
+
+// Utility function to manage recent searches in localStorage (from Section 1)
+const MAX_RECENT_SEARCHES = 5;
+
+const updateRecentSearches = (key, newValue) => {
+    if (!newValue || newValue.trim() === '') return;
+    const sanitizedValue = newValue.trim();
+
+    // 1. Load existing items
+    let items = JSON.parse(localStorage.getItem(key) || '[]');
+
+    // 2. Filter out the new value (to avoid duplicates)
+    items = items.filter(item => item !== sanitizedValue);
+
+    // 3. Add the new value to the front
+    items.unshift(sanitizedValue);
+
+    // 4. Limit the array length
+    items = items.slice(0, MAX_RECENT_SEARCHES);
+
+    // 5. Save back to localStorage
+    localStorage.setItem(key, JSON.stringify(items));
+    return items;
+};
+
+const loadRecentSearches = (key) => {
+    return JSON.parse(localStorage.getItem(key) || '[]');
+};
+
+// New component to handle the recent search list display (from Section 2)
+const RecentSearchDropdown = ({ items, onSelect }) => {
+    if (items.length === 0) return null;
+
+    return (
+        <div className="recent-searches-dropdown">
+            <p className='dropdown-title'>Recent Searches</p>
+            <ul>
+                {items.map((item, index) => (
+                    <li 
+                        key={index} 
+                        onClick={() => onSelect(item)}
+                    >
+                        {item}
+                    </li>
+                ))}
+            </ul>
+        </div>
+    );
+};
+
 
 const jeepneyRoutePath = [
     { lat: 14.818701, lng: 120.960834 },
@@ -45,7 +96,7 @@ const jeepneyRoutePath = [
     { lat: 14.86427, lng: 120.99306 },
     { lat: 14.86497, lng: 120.99475 },
     { lat: 14.86594, lng: 120.99661 },
-    { lat: 14.86692, lng: 120.99807 },
+    { lat: 14.86692, lng: 121.00007 },
     { lat: 14.86794, lng: 121.00006 },
     { lat: 14.8706, lng: 121.00216 },
     { lat: 14.87186, lng: 121.00504 },
@@ -66,24 +117,22 @@ const jeepneyRoutePath = [
 ];
 
 const transferPoints = [
-    { name: "Norzagaray Crossing", lat: 14.90581, lng: 121.03862 },
-    { name: "Partida", lat: 14.893597, lng: 121.023452},
-    { name: "Pulong Yantok", lat: 14.890642, lng: 121.019969 },
-    { name: "Kanto of Perez", lat: 14.888687, lng: 121.017536},
-    { name: "Garden Village", lat: 14.876638, lng: 121.009510},
-    { name: "Tierra", lat: 14.873335992345256, lng: 121.00673970657967},
-    { name: "Cityland", lat: 14.87055514685738, lng: 121.0021162271413 },
-    { name: "Balasing Kanto", lat: 14.865172, lng: 120.995133},
-    { name: "Bangka Bangka Kanto", lat: 14.864257, lng: 120.992826},
-    { name: "Caypombo Kanto", lat: 14.847646, lng: 120.980770 },
-    { name: "Sitio Bato", lat: 14.841415, lng: 120.979800},
-    { name: "Malawak", lat: 14.844310, lng: 120.980725},
-    { name: "Pintong Bato", lat: 14.840166, lng: 120.979607},
-    { name: "Santa Maria Proper", lat: 14.818701, lng: 120.960834 },
+    { name: "Norzagaray Crossing", lat: 14.90581, lng: 121.03862, type: 'point' }, 
+    { name: "Partida", lat: 14.893597, lng: 121.023452, type: 'point' },
+    { name: "Pulong Yantok", lat: 14.890642, lng: 121.019969, type: 'point' },
+    { name: "Kanto of Perez", lat: 14.888687, lng: 121.017536, type: 'point' },
+    { name: "Garden Village", lat: 14.876638, lng: 121.009510, type: 'point' },
+    { name: "Tierra", lat: 14.873335992345256, lng: 121.00673970657967, type: 'point' },
+    { name: "Cityland", lat: 14.87055514685738, lng: 121.0021162271413, type: 'point' },
+    { name: "Balasing", lat: 14.865172, lng: 120.995133, type: 'point' },
+    { name: "Bangka Bangka", lat: 14.864257, lng: 120.992826, type: 'point' },
+    { name: "Caypombo", lat: 14.847646, lng: 120.980770, type: 'point' },
+    { name: "Sitio Bato", lat: 14.841415, lng: 120.979800, type: 'point' },
+    { name: "Malawak", lat: 14.844310, lng: 120.980725, type: 'point' },
+    { name: "Pintong Bato", lat: 14.840166, lng: 120.979607, type: 'point' },
 
-    
-    { name: "Cityland-Perez Toda", lat: 14.885105, lng: 121.000043},
-    { name: "Camangyanan", lat: 14.802373, lng: 120.971376},
+    { name: "Santa Maria TODA Terminal", lat: 14.818701, lng: 120.960834, type: 'terminal' },     
+    { name: "Cityland-Perez TODA Terminal", lat: 14.885105, lng: 121.000043, type: 'terminal' }, 
 ];
 
 const getNearestTransferPoint = (point) => {
@@ -103,34 +152,36 @@ const getNearestTransferPoint = (point) => {
     return nearest;
 };
 
-// --- START of generateInstructionGroq function ---
+// --- START of generateInstructionGroq function (MODIFIED for guaranteed clean output) ---
 async function generateInstructionGroq(context) {
 
     const discountText = context.discountApplied 
-        ? `A 20% discount (Final Fare: ₱${context.fare}, Base Fare: ₱${context.baseFare}) was applied.` 
+        ? `A 20% PWD/Student/Senior discount (Final Fare: ₱${context.fare}, Base Fare: ₱${context.baseFare}) was applied.` 
         : `Regular fare applied.`;
 
+    // Reverting to simpler stepsBlock creation since the raw steps from processRoute are cleaner now.
     const stepsBlock = context.transfers.map((step, index) => `${index + 1}. ${step}`).join('\n');
 
     let finalSummary = '';
-    if (context.walkability) {
-        finalSummary = `\n\n**Friendly Tip:** ${context.walkability}`;
+    if (context.walkability && context.transportMode === 'jeepney') {
+        // Updated walkability tip to be more direct
+        finalSummary = `\n\n💰 Money-Saving Tip: ${context.walkability.replace(/Your destination is only about/, 'Since your destination is only about').replace(/Your destination is/, 'If you prefer to walk, your destination is')} (This tip is only applicable if the final step mentions walking/alighting).`;
     } else if (context.transportMode === 'tricycle') {
         // Special tip for full tricycle
-        finalSummary = `\n\n**Friendly Tip:** This is an estimated rate for a special trip based on distance and local norms. Always confirm the final fare with the driver before boarding.`;
+        finalSummary = `\n\nFriendly Tip: This is an estimated rate for a special trip based on distance and local norms. Always confirm the final fare with the driver before boarding.`;
     }
 
-    // Adjust the main persona and required steps based on transport mode
+    // --- REFINED PERSONA AND INSTRUCTION ---
     const persona = context.transportMode === 'tricycle'
-        ? "You are a friendly and expert **Local Guide for Santa Maria, Bulacan Tricycle Routes**. Your directions must reflect a single, direct tricycle journey."
-        : "You are a friendly and expert Public Transit Guide for the local **Norzagaray-Santa Maria, Bulacan Jeepney route**. All transfer steps (non-jeepney) should be assumed to require a tricycle.";
+        ? "You are a friendly local commuter from Santa Maria, Bulacan. Your directions must reflect a single, direct, special-trip tricycle journey."
+        : "You are a friendly local commuter from Santa Maria, Bulacan, specializing in the Norzagaray-Santa Maria Jeepney route. Your tone must be simple and conversational.";
 
     const requiredStepsInstruction = context.transportMode === 'tricycle'
-        ? "Your **sole task** is to convert the following raw travel steps into a clear, concise, and friendly **single instruction** for the passenger, emphasizing that the whole trip is by tricycle."
-        : "Your **sole task** is to convert the following raw travel steps into a clear, concise, and friendly **numbered list of directions** for the passenger.";
+        ? "Your sole task is to convert the raw travel steps into a clear, concise, and friendly single conversational instruction for the passenger, emphasizing that they are taking a special tricycle trip directly from their origin to their destination."
+        : "Your sole task is to convert the following raw travel steps into a clear, concise, and friendly numbered list of directions for the passenger. Use simple, conversational English that is easy for a local commuter to follow. Use an appropriate emoji (like 🚌 or 🛵) at the start of each step";
 
     const fareContext = context.transportMode === 'tricycle'
-        ? `Tricycle trip. Total Distance: ${context.distance} km. Estimated Fare: ₱${context.fare}. ${discountText}`
+        ? `Tricycle trip (Special Ride). Total Distance: ${context.distance} km. Estimated Fare: ₱${context.fare}. ${discountText}`
         : `Jeepney and Tricycle transfer. Total Distance: ${context.distance} km. Fare Calculation: Base Fare ₱${context.baseFare}. ${discountText}`;
 
     const prompt = `
@@ -138,14 +189,15 @@ async function generateInstructionGroq(context) {
 
         ${requiredStepsInstruction}
 
-        ### Required Travel Steps (MUST BE CONVERTED TO NUMBERED LIST/SINGLE INSTRUCTION):
+        ### Raw Travel Steps (CONVERT TO NUMBERED LIST/SINGLE INSTRUCTION):
         ${stepsBlock}
+        (Origin: ${context.origin}, Destination: ${context.destination})
 
         ### Important Fare Information:
         - ${fareContext}
-        - The main route for a jeepney is generally along: **${context.routeSummary}**. (Only mention this in the final output if the trip involves a jeepney).
+        - The main jeepney route is generally along: ${context.routeSummary}. (Only mention this in the final output if the trip involves a jeepney).
 
-        Provide the numbered list of directions (or a single step for tricycle) first, followed by the "Friendly Tip" at the end. Use short, action-oriented sentences and make sure to remove asterisks.
+        Provide the numbered list of directions (or a single step for tricycle) first, followed by the "Friendly Tip" at the end. Use short, action-oriented sentences. DO NOT include the asterisk symbols in your final output.** Ensure the tone is very friendly and local.
         ${finalSummary}
     `;
 
@@ -172,7 +224,14 @@ async function generateInstructionGroq(context) {
             const data = await response.json();
             
             if (data.choices?.[0]?.message?.content) {
-                return data.choices[0].message.content.trim();
+                let cleanedContent = data.choices[0].message.content.trim();
+                
+                // CRITICAL FIX: Strip all remaining asterisks from the output
+                // This ensures clean HTML for React's dangerouslySetInnerHTML
+                cleanedContent = cleanedContent.replace(/\*\*/g, '<b>').replace(/__g/g, '</b>'); // Try to interpret ** as <b>
+                cleanedContent = cleanedContent.replace(/\*\*/g, '').replace(/\*/g, ''); // Final removal just in case.
+                
+                return cleanedContent;
             }
 
         } catch (err) {
@@ -184,6 +243,8 @@ async function generateInstructionGroq(context) {
 }
 // --- END of generateInstructionGroq function ---
 
+
+const R = 6371; // Radius of Earth in kilometers (for Haversine formula)
 
 const FareCalculator = () => {
     const [origin, setOrigin] = useState('');
@@ -206,6 +267,19 @@ const FareCalculator = () => {
     const [isAiProcessing, setIsAiProcessing] = useState(false);
     const [showTutorial, setShowTutorial] = useState(true);
     const [currentStep, setCurrentStep] = useState(0);
+
+    // NEW STATES FOR COMPARISON & FILTER
+    const [shortestRouteIndex, setShortestRouteIndex] = useState(0); 
+    const [cheapestFareRouteIndex, setCheapestFareRouteIndex] = useState(0); 
+    const [routeComparisons, setRouteComparisons] = useState([]);
+    const [activeFilter, setActiveFilter] = useState('all'); // 'all', 'point', 'terminal'
+
+    //new state for recent searches
+    const [recentOrigins, setRecentOrigins] = useState(loadRecentSearches('recentOrigins'));
+    const [recentDestinations, setRecentDestinations] = useState(loadRecentSearches('recentDestinations'));
+    const [showRecentOrigins, setShowRecentOrigins] = useState(false);
+    const [showRecentDestinations, setShowRecentDestinations] = useState(false);
+
 
     const tutorialSteps = [
         {
@@ -234,7 +308,7 @@ const FareCalculator = () => {
             elementId: 'calculate-btn',
         },
         {
-            title: "You're All Set!",
+            title: "5. All Set!",
             text: "You can now start planning your trip! This information panel can be collapsed anytime by clicking the green button to the left.",
             elementId: 'final-step',
         }
@@ -256,13 +330,10 @@ const FareCalculator = () => {
 
     const handleSkip = () => {
         setShowTutorial(false);
-        // Optionally save to localStorage/sessionStorage so it doesn't pop up again
         localStorage.setItem('hasSeenTutorial', 'true');
     };
 
-    // Add this useEffect hook inside the FareCalculator component
     useEffect(() => {
-        // Check local storage to see if the user has already seen the tutorial
         const hasSeen = localStorage.getItem('hasSeenTutorial');
         if (hasSeen === 'true') {
             setShowTutorial(false);
@@ -379,15 +450,23 @@ const FareCalculator = () => {
         return allPoints;
     };
 
-const R = 6371; // Radius of Earth in kilometers (for Haversine formula)
-
-const processRoute = useCallback(async (route) => {
+const processRoute = useCallback(async (route, index) => {
     const distanceText = route.legs[0].distance.text;
     const distanceValue = parseFloat(distanceText.replace(/[^0-9.]/g, ''));
     
-    // Determine the main street name or use a default
+    if (distanceValue > 20) {
+        return {
+            fare: 'N/A',
+            distance: distanceValue.toFixed(2),
+            baseFare: 'N/A',
+            transportMode: 'LONG DISTANCE TRIP DETECTED! Route outside Santa Maria Bulacan is not covered by Budget Byahe.',
+            isJeepneyRoute: false,
+            discountApplied: false,
+            routeIndex: index
+        };
+    }
+
     const routeSummary = route.summary || "the main public road";
-    
     const routePoints = extractStepPathPoints(route);
     const destinationCoords = {
         lat: route.legs[0].end_location.lat(),
@@ -398,24 +477,16 @@ const processRoute = useCallback(async (route) => {
         lng: route.legs[0].start_location.lng(),
     };
 
-    // --- LONG DISTANCE CHECK (Keep this first) ---
-    if (distanceValue > 20) {
-        return setTransportMode('🚗 LONG DISTANCE TRIP DETECTED! Route outside Santa Maria Bulacan is not covered by Budget Byahe.');
-    }
-
-    // --- CHECK FOR TRICYCLE ROUTE (The core fix) ---
     const passesJeepneyRoute = routePoints.some((point) => isNearJeepneyRoute(point));
     
+    let baseFare, finalFare, transportModeText, transfers, walkabilityInfo, discountApplied = false;
+
     if (!passesJeepneyRoute) {
         // --- TRICYCLE ONLY LOGIC ---
-        // A simple, placeholder fare calculation for a full tricycle trip.
-        // Assume a base fare of P40 plus P8 per kilometer after the first km.
-        let baseFare = 40 + Math.max(0, (distanceValue - 1) * 8);
+        baseFare = 40 + Math.max(0, (distanceValue - 1) * 8);
         
-        let finalFare = baseFare;
-        let discountApplied = false;
+        finalFare = baseFare;
         if (discountType !== 'none') {
-            // Apply 20% discount to the private hire base fare
             finalFare = baseFare * 0.80; 
             discountApplied = true;
         }
@@ -423,116 +494,130 @@ const processRoute = useCallback(async (route) => {
         const calculatedFare = finalFare.toFixed(2);
         const baseFareFormatted = baseFare.toFixed(2);
         
-        setDistanceKm(distanceValue);
-        setFare(calculatedFare); 
+        transportModeText = 'tricycle';
+        transfers = [`Take a tricycle directly from your origin to your destination. (Estimated Fare: ₱${calculatedFare})`];
+        walkabilityInfo = '';
 
-        setIsAiProcessing(true);
         const aiSuggestion = await generateInstructionGroq({
-            transportMode: 'tricycle', // New context for AI
+            transportMode: 'tricycle', 
             originOnRoute: false,
             destinationOnRoute: false,
             distance: distanceValue.toFixed(2),
             baseFare: baseFareFormatted,
             fare: calculatedFare,
             discountApplied,
-            // Simple instruction for full tricycle trip
-            transfers: [`Take a tricycle directly from your origin to your destination. (Estimated Fare: ₱${calculatedFare})`], 
-            walkability: '', 
+            transfers, 
+            walkability: walkabilityInfo, 
             routeSummary: 'local streets', 
+            origin: origin, // ADDED
+            destination: destination, // ADDED
         });
 
-        setIsAiProcessing(false);
-        // Overwrite the message to clearly state it's a full tricycle trip
-        const tricycleMessage = `⚠️ TRICYCLE RIDE REQUIRED! This trip does not pass through the main jeepney route and requires a full Tricycle Ride. The fare is an (estimate) based on distance and local rates (fares can be negotiated).<br/><br/>${aiSuggestion}`;
-        return setTransportMode(tricycleMessage);
-    }
-    
-    // --- JEEPNEY ROUTE LOGIC (Original logic for mixed or full jeepney trip) ---
-    
-    let baseFare = Math.max(12, distanceValue * 2); 
-    
-    let finalFare = baseFare;
-    let discountApplied = false;
-    if (discountType !== 'none') {
-        finalFare = baseFare * 0.80; 
-        discountApplied = true;
-    }
-    
-    const calculatedFare = finalFare.toFixed(2);
-    const baseFareFormatted = baseFare.toFixed(2);
-
-    setDistanceKm(distanceValue);
-    setFare(calculatedFare); 
-
-    const originOnRoute = isNearJeepneyRoute(originCoords);
-    const destinationOnRoute = isNearJeepneyRoute(destinationCoords);
-
-    const entryPoint = routePoints.find((p) => isNearJeepneyRoute(p));
-    const exitPoint = [...routePoints].reverse().find((p) => isNearJeepneyRoute(p));
-
-    let transferSteps = [];
-    let walkabilityInfo = ''; 
-
-    const fareDisplay = distanceValue >= 20 ? 'Estimated Fare: N/A' : `Estimated Fare: ₱${calculatedFare}`;
-
-    if (entryPoint && !originOnRoute) {
-        const pickup = getNearestTransferPoint(entryPoint);
-        transferSteps.push(`Take a tricycle to the jeepney stop at ${pickup.name}`);
-    }
-
-    // Include the street name in the Jeepney step for better context
-    const jeepneyStep = `Ride the Norzagaray-Santa Maria jeepney route along **${routeSummary}** (${fareDisplay})`;
-    transferSteps.push(jeepneyStep);
-
-
-    if (exitPoint && !destinationOnRoute) {
-        const dropoff = getNearestTransferPoint(exitPoint);
+        transportModeText = `⚠️ TRICYCLE RIDE REQUIRED! This trip does not pass through the main jeepney route and requires a full Tricycle Ride. The fare is an (estimate) based on distance and local rates (fares can be negotiated).<br/><br/>${aiSuggestion}`;
         
-        // --- WALKABILITY CHECK (Haversine Formula) ---
-        const lastStopCoords = { lat: dropoff.lat, lng: dropoff.lng };
-        
-        const dLat = (destinationCoords.lat - lastStopCoords.lat) * (Math.PI / 180);
-        const dLon = (destinationCoords.lng - lastStopCoords.lng) * (Math.PI / 180);
-        const a = 
-            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos(lastStopCoords.lat * (Math.PI / 180)) * Math.cos(destinationCoords.lat * (Math.PI / 180)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        const straightLineDistanceKm = R * c; 
-        
-        const walkabilityThresholdKm = 0.5; // 500 meters
+        return {
+            fare: calculatedFare,
+            distance: distanceValue.toFixed(2),
+            baseFare: baseFareFormatted,
+            transportMode: transportModeText,
+            isJeepneyRoute: false,
+            discountApplied,
+            routeIndex: index
+        };
 
-        if (straightLineDistanceKm <= walkabilityThresholdKm) {
-            const distanceMeters = Math.round(straightLineDistanceKm * 1000);
-            walkabilityInfo = `Your destination is only about **${distanceMeters} meters** from **${dropoff.name}**. You can comfortably walk the final leg of the trip.`;
-            transferSteps.push(`Alight at ${dropoff.name} and proceed on foot to your final destination.`);
-        } else {
-            walkabilityInfo = `Your destination is **${straightLineDistanceKm.toFixed(2)} km** from **${dropoff.name}**. A tricycle ride is highly recommended for this distance.`;
-            transferSteps.push(`Alight at ${dropoff.name} and take a tricycle to your destination.`);
+    } else {
+        // --- JEEPNEY ROUTE LOGIC ---
+        
+        baseFare = Math.max(12, distanceValue * 2); 
+        
+        finalFare = baseFare;
+        if (discountType !== 'none') {
+            finalFare = baseFare * 0.80; 
+            discountApplied = true;
         }
-    } else if (originOnRoute && destinationOnRoute) {
-        transferSteps = [jeepneyStep];
-        walkabilityInfo = "Your entire trip is on the main jeepney route. No transfers needed.";
+        
+        const calculatedFare = finalFare.toFixed(2);
+        const baseFareFormatted = baseFare.toFixed(2);
+
+        const originOnRoute = isNearJeepneyRoute(originCoords);
+        const destinationOnRoute = isNearJeepneyRoute(destinationCoords);
+
+        const entryPoint = routePoints.find((p) => isNearJeepneyRoute(p));
+        const exitPoint = [...routePoints].reverse().find((p) => isNearJeepneyRoute(p));
+
+        transfers = [];
+        walkabilityInfo = ''; 
+
+        const fareDisplay = distanceValue >= 20 ? 'Estimated Fare: N/A' : `Estimated Fare: ₱${calculatedFare}`;
+
+        if (entryPoint && !originOnRoute) {
+            const pickup = getNearestTransferPoint(entryPoint);
+            transfers.push(`Take a tricycle to the jeepney stop at ${pickup.name}`);
+        }
+
+        // NOTE: No asterisks here, AI must handle the bolding
+        const jeepneyStep = `Ride the Norzagaray-Santa Maria jeepney route along ${routeSummary} (${fareDisplay})`;
+        transfers.push(jeepneyStep);
+
+
+        if (exitPoint && !destinationOnRoute) {
+            const dropoff = getNearestTransferPoint(exitPoint);
+            
+            const lastStopCoords = { lat: dropoff.lat, lng: dropoff.lng };
+            
+            const dLat = (destinationCoords.lat - lastStopCoords.lat) * (Math.PI / 180);
+            const dLon = (destinationCoords.lng - lastStopCoords.lng) * (Math.PI / 180);
+            const a = 
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lastStopCoords.lat * (Math.PI / 180)) * Math.cos(destinationCoords.lat * (Math.PI / 180)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            const straightLineDistanceKm = R * c; 
+            
+            const walkabilityThresholdKm = 0.5; // 500 meters
+
+            if (straightLineDistanceKm <= walkabilityThresholdKm) {
+                const distanceMeters = Math.round(straightLineDistanceKm * 1000);
+                walkabilityInfo = `Your destination is only about ${distanceMeters} meters from ${dropoff.name}. You can comfortably walk the final leg of the trip.`;
+                transfers.push(`Get off at ${dropoff.name} and proceed on foot to your final destination.`);
+            } else {
+                walkabilityInfo = `Your destination is ${straightLineDistanceKm.toFixed(2)} km from ${dropoff.name}. A tricycle ride is highly recommended for this distance.`;
+                transfers.push(`Get off at ${dropoff.name} and take a tricycle to your destination.`);
+            }
+        } else if (originOnRoute && destinationOnRoute) {
+            transfers = [jeepneyStep];
+            walkabilityInfo = "Your entire trip is on the main jeepney route. No transfers needed.";
+        }
+        
+        setIsAiProcessing(true);
+
+        const aiSuggestion = await generateInstructionGroq({
+            transportMode: 'jeepney', 
+            originOnRoute,
+            destinationOnRoute,
+            distance: distanceValue.toFixed(2),
+            baseFare: baseFareFormatted,
+            fare: calculatedFare,
+            discountApplied,
+            transfers, 
+            walkability: walkabilityInfo,
+            routeSummary: routeSummary,
+            origin: origin, // ADDED
+            destination: destination, // ADDED
+        });
+
+        transportModeText = aiSuggestion.replace(/\n/g, '<br/>');
+
+        return {
+            fare: calculatedFare,
+            distance: distanceValue.toFixed(2),
+            baseFare: baseFareFormatted,
+            transportMode: transportModeText,
+            isJeepneyRoute: true,
+            discountApplied,
+            routeIndex: index
+        };
     }
-    
-    setIsAiProcessing(true);
-
-    const aiSuggestion = await generateInstructionGroq({
-        transportMode: 'jeepney', // New context for AI
-        originOnRoute,
-        destinationOnRoute,
-        distance: distanceValue.toFixed(2),
-        baseFare: baseFareFormatted,
-        fare: calculatedFare,
-        discountApplied,
-        transfers: transferSteps, 
-        walkability: walkabilityInfo,
-        routeSummary: routeSummary,
-    });
-
-    setIsAiProcessing(false);
-    setTransportMode(aiSuggestion.replace(/\n/g, '<br/>'));
-}, [discountType]);
-
+}, [discountType, origin, destination]); // Dependency array updated
 
     const clearInput = () => {
         if(originRef.current)
@@ -554,6 +639,10 @@ const processRoute = useCallback(async (route) => {
         setSelectedRouteIndex(0);
         setAllowManualInput(false);
         setDiscountType('none');
+        setRouteComparisons([]); // Clear comparison state
+        setShortestRouteIndex(0);
+        setCheapestFareRouteIndex(0);
+        setActiveFilter('all'); // Reset filter
     }
 
 
@@ -577,6 +666,9 @@ const processRoute = useCallback(async (route) => {
         setSuggestion('');
         setTransportMode('');
         setSelectedRouteIndex(0);
+        setRouteComparisons([]); // Reset comparison
+        setShortestRouteIndex(0);
+        setCheapestFareRouteIndex(0);
 
         setOrigin(originVal);
         setDestination(destinationVal);
@@ -592,47 +684,77 @@ const processRoute = useCallback(async (route) => {
             avoidFerries: true,
             avoidTolls: false,
             optimizeWaypoints: false,
-        }, (result, status) => {
+        }, async (result, status) => {
             setIsCalculating(false);
 
             if (status === window.google.maps.DirectionsStatus.OK) {
-                // Sort routes by distance to get consistent ordering
-                const sortedRoutes = result.routes.sort((a, b) => {
-                    const distanceA = a.legs[0].distance.value;
-                    const distanceB = b.legs[0].distance.value;
-                    return distanceA - distanceB;
-                });
 
-                // Filter routes if needed, but keep original if no filtered routes
-                const filteredRoutes = sortedRoutes.filter(route =>
-                    /national|highway|main|rd|road/i.test(route.summary)
+                // 💾 NEW: Update Recent Searches on successful calculation
+                setRecentOrigins(updateRecentSearches('recentOrigins', originVal));
+                setRecentDestinations(updateRecentSearches('recentDestinations', destinationVal));
+
+                // Combine all routes, sort by distance, and process
+                const allRoutes = result.routes;
+                
+                // Process all routes to get fares and distance info
+                setIsAiProcessing(true);
+                const processedResults = await Promise.all(
+                    allRoutes.map((route, index) => processRoute(route, index))
                 );
+                setIsAiProcessing(false);
 
-                const finalRoutes = filteredRoutes.length > 0 ? filteredRoutes : sortedRoutes;
+                setRouteComparisons(processedResults);
 
-                const directionsWithFilteredRoutes = { ...result, routes: finalRoutes };
-                setDirectionsResult(directionsWithFilteredRoutes);
-                setSelectedRouteIndex(0);
-
-                // Process the first route immediately
-                if (finalRoutes.length > 0) {
-                    processRoute(finalRoutes[0]);
+                // --- Determine Shortest (Most Efficient) Route ---
+                let shortestRoute = processedResults[0];
+                for (const res of processedResults) {
+                    if (parseFloat(res.distance) < parseFloat(shortestRoute.distance)) {
+                        shortestRoute = res;
+                    }
                 }
+                setShortestRouteIndex(shortestRoute.routeIndex);
+                
+                // --- Determine Cheapest Route ---
+                // Only consider routes with valid numeric fares (not N/A)
+                const viableRoutes = processedResults.filter(res => res.fare !== 'N/A' && parseFloat(res.fare) > 0);
+                
+                let cheapestRoute = viableRoutes.length > 0 ? viableRoutes[0] : shortestRoute; // Default to shortest if none are viable
+                for (const res of viableRoutes) {
+                    if (parseFloat(res.fare) < parseFloat(cheapestRoute.fare)) {
+                        cheapestRoute = res;
+                    }
+                }
+                setCheapestFareRouteIndex(cheapestRoute.routeIndex);
+
+
+                // Update DirectionsResult with all routes for rendering
+                setDirectionsResult(result);
+                // Set the selected route to the most efficient (shortest) one initially
+                setSelectedRouteIndex(shortestRoute.routeIndex);
+
+                // Update the single display states for the selected route
+                setDistanceKm(shortestRoute.distance);
+                setFare(shortestRoute.fare);
+                setTransportMode(shortestRoute.transportMode);
+
+
             } else {
                 alert('Could not find route. Please check your locations and try again.');
             }
         });
     };
 
-    // Only trigger when route index changes or discount/directions result changes
+    // Only trigger when selectedRouteIndex changes (for map and single display)
     useEffect(() => {
-        if (directionsResult?.routes?.length > 0 ) {
-            const route = directionsResult.routes[selectedRouteIndex];
-            if (route) {
-                processRoute(route);
-            }
+        if (directionsResult?.routes?.length > 0 && routeComparisons.length > selectedRouteIndex) {
+            const selectedResult = routeComparisons[selectedRouteIndex];
+            
+            // Update the single display states for the currently selected route
+            setDistanceKm(selectedResult.distance);
+            setFare(selectedResult.fare);
+            setTransportMode(selectedResult.transportMode);
         }
-    }, [selectedRouteIndex, directionsResult, discountType, processRoute]);
+    }, [selectedRouteIndex, directionsResult, routeComparisons]);
 
     const switchLocation = () => {
         const originInput = document.getElementById('origin');
@@ -671,8 +793,116 @@ const processRoute = useCallback(async (route) => {
         };
     };
 
+    // NEW FUNCTION: Component to display the two comparison sections
+    const RouteComparisonDisplay = ({ shortestIndex, cheapestIndex, comparisons }) => {
+        if (!comparisons || comparisons.length === 0) return null;
+
+        const shortest = comparisons[shortestIndex];
+        const cheapest = comparisons[cheapestIndex];
+        
+        const isSameRoute = shortestIndex === cheapestIndex;
+
+        return (
+            <div className="route-comparison-sections">
+                {/* 1. MOST EFFICIENT SECTION (Shortest Distance) */}
+                <div className="comparison-section efficient-route">
+                    <h4><FaGasPump /> Most Efficient Route</h4>
+                    <p className='section-subtext'>Shortest distance, generally the fastest trip.</p>
+                    <div className="route-summary-box" onClick={() => setSelectedRouteIndex(shortestIndex)}>
+                        <div className="route-title">
+                            Route {shortestIndex + 1}
+                            {isSameRoute && <span className="tag primary">BEST VALUE</span>}
+                            {!isSameRoute && selectedRouteIndex === shortestIndex && <span className="tag selected">SELECTED</span>}
+                        </div>
+                        <div className="route-metrics">
+                            <span className="metric-distance">{shortest.distance} km</span>
+                            <span className="metric-fare">₱{shortest.fare}</span>
+                        </div>
+                        <button 
+                            className='select-route-btn'
+                            onClick={(e) => { e.stopPropagation(); setSelectedRouteIndex(shortestIndex); }}
+                            disabled={selectedRouteIndex === shortestIndex}
+                        >
+                            {selectedRouteIndex === shortestIndex ? 'Currently Viewing' : 'View on Map'}
+                        </button>
+                    </div>
+                </div>
+
+                <div className='comparison-divider'></div>
+                
+                {/* 2. CHEAPEST FARE SECTION */}
+                {!isSameRoute && (
+                    <div className="comparison-section cheapest-route">
+                        <h4><FaMoneyBillWave /> Cheapest Fare Route</h4>
+                        <p className='section-subtext'>Lowest estimated fare for the trip.</p>
+                        <div className="route-summary-box" onClick={() => setSelectedRouteIndex(cheapestIndex)}>
+                            <div className="route-title">
+                                Route {cheapestIndex + 1}
+                                {selectedRouteIndex === cheapestIndex && <span className="tag selected">SELECTED</span>}
+                            </div>
+                            <div className="route-metrics">
+                                <span className="metric-distance">{cheapest.distance} km</span>
+                                <span className="metric-fare">₱{cheapest.fare}</span>
+                            </div>
+                            <button 
+                                className='select-route-btn'
+                                onClick={(e) => { e.stopPropagation(); setSelectedRouteIndex(cheapestIndex); }}
+                                disabled={selectedRouteIndex === cheapestIndex}
+                            >
+                                {selectedRouteIndex === cheapestIndex ? 'Viewing' : 'View on Map'}
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </div>
+        );
+    };
+
+    // NEW FUNCTION: Filter points based on active filter state
+    const getFilteredTransferPoints = useCallback(() => {
+        if (activeFilter === 'all') {
+            return transferPoints;
+        }
+        return transferPoints.filter(point => {
+            if (activeFilter === 'terminal') {
+                return point.type === 'terminal';
+            }
+            if (activeFilter === 'point') {
+                return point.type === 'point';
+            }
+            return false;
+        });
+    }, [activeFilter]);
+
+
     return isLoaded ? (
         <div className="map-wrapper">
+            {/* --- NEW MAP FILTER UI BLOCK --- */}
+            <div className="map-filters-bar">
+                <button 
+                    className={`filter-btn ${activeFilter === 'all' ? 'active' : ''}`}
+                    onClick={() => setActiveFilter('all')}
+                >
+                    <IoLocationSharp size={20} />
+                    All Points
+                </button>
+                <button 
+                    className={`filter-btn ${activeFilter === 'point' ? 'active' : ''}`}
+                    onClick={() => setActiveFilter('point')}
+                >
+                    <MdOutlineDirectionsBus size={20} />
+                    Transfer Points
+                </button>
+                <button 
+                    className={`filter-btn ${activeFilter === 'terminal' ? 'active' : ''}`}
+                    onClick={() => setActiveFilter('terminal')}
+                >
+                    <MdLocalTaxi size={20} />
+                    TODA Terminal
+                </button>
+            </div>
+
+
             <div className={`fare-container ${!isPanelOpen ? 'closed' : ''}`}>
                 {/* Collapse/Expand Toggle Button */}
                 <div className="panel-toggle" onClick={togglePanel}>
@@ -685,22 +915,68 @@ const processRoute = useCallback(async (route) => {
                     <p className='fare-description'>Enter your starting point and destination to instantly calculate the estimated fare for your commute.</p>
                     <div className="input-group">
                         <div className="input-pair">
-                            <div className="input-with-icon">
-                                <FaMapMarkerAlt className="input-icon" />
-                                <input
-                                    type="text"
-                                    placeholder="Enter Origin"
-                                    ref={originRef}
-                                    id='origin'
-                                    onFocus={() => {
-                                        if(!allowManualInput) setShowLocationModal(true);
-                                    }}
-                                />
+                            {/* 🌟 NEW: ORIGIN INPUT CONTAINER with Dropdown */}
+                            <div className="input-container" id="recent-origin-container">
+                                <div className="input-with-icon">
+                                    <FaMapMarkerAlt className="input-icon" />
+                                    <input
+                                        type="text"
+                                        placeholder="Enter Origin"
+                                        ref={originRef}
+                                        id='origin'
+                                        onFocus={() => {
+                                            if(!allowManualInput) setShowLocationModal(true);
+                                            setShowRecentOrigins(true); // Show recent searches on focus
+                                        }}
+                                        onBlur={() => {
+                                            // Delay hiding to allow clicks on dropdown items to register
+                                            setTimeout(() => setShowRecentOrigins(false), 200);
+                                        }}
+                                    />
+                                </div>
+                                {/* Conditional rendering based on showRecentOrigins state */}
+                                {(recentOrigins.length > 0 && showRecentOrigins) && (
+                                    <RecentSearchDropdown 
+                                        items={recentOrigins}
+                                        onSelect={(val) => {
+                                            originRef.current.value = val;
+                                            setOrigin(val); 
+                                            setAllowManualInput(true);
+                                            setShowRecentOrigins(false); // Hide immediately after selection
+                                            originRef.current.focus(); // Keep focus on input for immediate action
+                                        }}
+                                    />
+                                )}
                             </div>
-
-                            <div className="input-with-icon">
-                                <FaFlag className="input-icon" />
-                                <input type="text" placeholder="Enter Destination" ref={destinationRef} id='destination' />
+                            
+                            {/* 🌟 NEW: DESTINATION INPUT CONTAINER with Dropdown */}
+                            <div className="input-container" id="recent-destination-container">
+                                <div className="input-with-icon">
+                                    <FaFlag className="input-icon" />
+                                    <input 
+                                        type="text" 
+                                        placeholder="Enter Destination" 
+                                        ref={destinationRef} 
+                                        id='destination' 
+                                        onFocus={() => setShowRecentDestinations(true)} // Show recent searches on focus
+                                        onBlur={() => {
+                                            // Delay hiding to allow clicks on dropdown items to register
+                                            setTimeout(() => setShowRecentDestinations(false), 200);
+                                        }}
+                                    />
+                                </div>
+                                {/* Conditional rendering based on showRecentDestinations state */}
+                                {(recentDestinations.length > 0 && showRecentDestinations) && (
+                                    <RecentSearchDropdown 
+                                        items={recentDestinations}
+                                        onSelect={(val) => {
+                                            destinationRef.current.value = val;
+                                            setDestination(val); 
+                                            setShowRecentDestinations(false); // Hide immediately after selection
+                                            destinationRef.current.focus(); // Keep focus on input for immediate action
+                                        }}
+                                    />
+                                )}
                             </div>
 
                             <img src={switchLogo} onClick={switchLocation} className='switch-icon' alt="Switch Locations" />
@@ -722,8 +998,28 @@ const processRoute = useCallback(async (route) => {
                         </button>
                     </div>
 
+                    {directionsResult?.routes?.length > 1 && (
+                            <div className="alternative-routes">
+                                <h4>All Available Routes:</h4>
+                                <p className='section-subtext'>Click a button to view the route on the map.</p>
+                                {directionsResult.routes.map((route, index) => (
+                                    <button
+                                        key={index}
+                                        onClick={() => setSelectedRouteIndex(index)}
+                                        className={`alternative-route-btn 
+                                            ${selectedRouteIndex === index ? 'selected-route-btn' : ''} 
+                                            ${index === shortestRouteIndex ? ' shortest-indicator' : ''}
+                                            ${index === cheapestFareRouteIndex ? ' cheapest-indicator' : ''}
+                                        `}
+                                    >
+                                        Route {index + 1} ({route.legs[0].distance.text})
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+
                     <div className="fare-details">
-                        {(distanceKm > 0 || isAiProcessing) && (
+                        {(routeComparisons.length > 0 || isAiProcessing) && (
                             <>
                                 {isAiProcessing ? (
                                     <div className="skeleton-loader">
@@ -735,39 +1031,29 @@ const processRoute = useCallback(async (route) => {
                                     </div>
                                 ) : (
                                     <>
-                                        <p>Distance: {distanceKm} km</p>
-                                        <p>Estimated Fare: {distanceKm >= 20 ? 'N/A' : `₱${fare}`}</p>
-                                        <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-                                        </div>
-                                        <div className="transport-info">
-                                            <p dangerouslySetInnerHTML={{ __html: transportMode }}></p>
+                                        {/* Comparison Display */}
+                                        <RouteComparisonDisplay 
+                                            shortestIndex={shortestRouteIndex}
+                                            cheapestIndex={cheapestFareRouteIndex}
+                                            comparisons={routeComparisons}
+                                        />
+
+                                        {/* Full Details of the CURRENTLY SELECTED ROUTE */}
+                                        <div className="selected-route-details">
+                                            <h3>Route {selectedRouteIndex + 1} Details (Selected)</h3>
+                                            <p>Distance: {distanceKm} km</p>
+                                            <p>Estimated Fare: {distanceKm >= 20 ? 'N/A' : `₱${fare}`}</p>
+                                            <div className="transport-info">
+                                                <h4>AI Suggestions:</h4>
+                                                {/* DANGER! Used dangerouslySetInnerHTML for AI-generated HTML/bold tags */}
+                                                <p dangerouslySetInnerHTML={{ __html: transportMode }}></p>
+                                            </div>
                                         </div>
                                     </>
                                 )}
                             </>
                         )}
-
-                        {directionsResult?.routes?.length > 1 && (
-                            <div className="alternative-routes">
-                                <h4>Alternative Routes:</h4>
-                                {directionsResult.routes.map((route, index) => (
-                                    <button
-                                        key={index}
-                                        onClick={() => setSelectedRouteIndex(index)}
-                                        style={{
-                                            margin: '4px',
-                                            backgroundColor: selectedRouteIndex === index ? 'green' : '#ccc',
-                                            color: selectedRouteIndex === index ? '#fff' : '#000',
-                                            border: 'none',
-                                            padding: '5px 10px',
-                                            cursor: 'pointer'
-                                        }}
-                                    >
-                                        Route {index + 1} ({route.legs[0].distance.text})
-                                    </button>
-                                ))}
-                            </div>
-                        )}
+                        
                     </div>
                     <div className="route-legend">
                         <h4>Map Legend</h4>
@@ -796,7 +1082,7 @@ const processRoute = useCallback(async (route) => {
                                 routes: [directionsResult.routes[selectedRouteIndex]]
                             }}
                             options={{
-                                suppressMarkers: true, // Hide default A/B markers
+                                suppressMarkers: true, 
                                 polylineOptions: {
                                     strokeColor: 'green',
                                     strokeOpacity: 1,
@@ -812,7 +1098,7 @@ const processRoute = useCallback(async (route) => {
                                 lat: directionsResult.routes[selectedRouteIndex].legs[0].start_location.lat(),
                                 lng: directionsResult.routes[selectedRouteIndex].legs[0].start_location.lng()
                             }}
-                            icon={createChatBubbleMarker('Start', '#FF4444', 'white')} // Red bubble
+                            icon={createChatBubbleMarker('Start', '#FF4444', 'white')} 
                             title={`Origin: ${origin}`}
                         />
 
@@ -822,7 +1108,7 @@ const processRoute = useCallback(async (route) => {
                                 lat: directionsResult.routes[selectedRouteIndex].legs[0].end_location.lat(),
                                 lng: directionsResult.routes[selectedRouteIndex].legs[0].end_location.lng()
                             }}
-                            icon={createChatBubbleMarker('End', '#4444FF', 'white')} // Blue bubble
+                            icon={createChatBubbleMarker('End', '#4444FF', 'white')} 
                             title={`Destination: ${destination}`}
                         />
                     </>
@@ -832,13 +1118,14 @@ const processRoute = useCallback(async (route) => {
                     path={jeepneyRoutePath}
                     options={{
                         strokeColor: '#FF5733',
-                        strokeOpacity: 1, // Changed to 1 to show the route clearly
+                        strokeOpacity: 1, 
                         strokeWeight: 4,
                         zIndex: 1
                     }}
                 />
 
-                {transferPoints.map((point, index) => (
+                {/* --- RENDER FILTERED MARKERS --- */}
+                {getFilteredTransferPoints().map((point, index) => (
                     <Marker
                         key={index}
                         position={{ lat: point.lat, lng: point.lng }}
@@ -849,13 +1136,13 @@ const processRoute = useCallback(async (route) => {
                         }}
                         icon={{
                             path: window.google.maps.SymbolPath.CIRCLE,
-                            scale: 8,
-                            fillColor: '#00A86B', // Green for transfer points
+                            scale: point.type === 'terminal' ? 10 : 8, 
+                            fillColor: point.type === 'terminal' ? '#0d7a49' : '#00A86B', 
                             fillOpacity: 1,
                             strokeWeight: 1,
                             strokeColor: 'white'
                         }}
-                        title={point.name}
+                        title={point.name + (point.type === 'terminal' ? " (TODA Terminal)" : " (Transfer Point)")}
                     />
                 ))}
             </GoogleMap>
