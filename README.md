@@ -18,6 +18,7 @@ Developed by **ByaHERO**
 - [Admin Setup](#admin-setup)
 - [Project Structure](#project-structure)
 - [API Endpoints](#api-endpoints)
+- [Documentation](#documentation)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -422,7 +423,47 @@ For issues, questions, or suggestions:
 
 ---
 
-## 📊 System Requirements
+## � Documentation
+
+Comprehensive documentation is available in the [`docs/`](docs/) folder:
+
+### Quick Start Guides
+- **[Admin Setup Guide](docs/ADMIN_SETUP_GUIDE.md)** - Set up your first admin account
+- **[CMS Guide](docs/CMS_GUIDE.md)** - Manage website content and branding
+- **[Quick Deploy Reference](docs/QUICK_DEPLOY_REFERENCE.md)** - Essential deployment commands
+
+### Deployment & Configuration
+- **[Deployment Guide](docs/DEPLOYMENT_GUIDE.md)** - Complete production deployment
+- **[Build Guide](docs/BUILD_GUIDE.md)** - Building for production
+- **[Dynamic Config Summary](docs/DYNAMIC_CONFIG_SUMMARY.md)** - Environment configuration
+
+### Feature Implementation
+- **[CMS Implementation](docs/CMS_IMPLEMENTATION.md)** - Technical CMS details
+- **[CMS Setup](docs/CMS_SETUP.md)** - Step-by-step CMS configuration
+
+### Troubleshooting
+- **[Hostinger Auth Fix](docs/HOSTINGER_AUTH_FIX.md)** - Fix authentication on Hostinger
+- **[Quick Auth Fix](docs/QUICK_AUTH_FIX.md)** - Quick authentication solutions
+- **[Next Steps](docs/NEXT_STEPS.md)** - Post-deployment recommendations
+
+📖 **[View All Documentation](docs/README.md)**
+
+---
+
+## � Production Setup
+
+Ready to deploy to production? All production setup files and scripts are available in the [`production-setup/`](production-setup/) folder:
+
+- **[Production Setup Guide](production-setup/README.md)** - Complete production deployment instructions
+- **Automated Setup Scripts** - PowerShell (Windows) and Bash (Linux/Mac) scripts
+- **Environment Templates** - Frontend and backend `.env` examples
+- **Hostinger Configuration** - Domain and hosting setup details
+
+🔧 **[View Production Setup Files](production-setup/README.md)**
+
+---
+
+## ��📊 System Requirements
 
 ### Minimum Requirements
 - **OS:** Windows 10/11, macOS 10.14+, Ubuntu 18.04+
