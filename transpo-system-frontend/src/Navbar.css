@@ -325,23 +325,25 @@
   .nav-links li {
     width: 100%;
     margin-bottom: 12px;
+    text-align: center; /* This will now work! */
   }
 
   .nav-links a {
     font-size: 1.1rem;
   }
 
+  /* --- THIS IS THE FIX --- */
   .btn-login,
   .btn-signup,
   .btn-logout {
-    width: 100%;
-    justify-content: center;
+    display: inline-flex; /* <-- ADD THIS LINE */
     padding: 12px 24px;
   }
 
+  /* This part is correct */
   .user-profile-section {
     width: 100%;
-    justify-content: center;
+    justify-content: center; /* This centers the avatar/greeting INSIDE the bar */
     padding: 12px 20px;
   }
 

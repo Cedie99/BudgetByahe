@@ -65,6 +65,7 @@ section:not(:last-of-type) {
     border-radius: 50%;
     filter: blur(80px);
     z-index: 0;
+    transition: all 0.3s ease-in-out; /* Added for smoother resizing */
 }
 
 .landing-section::after {
@@ -79,6 +80,7 @@ section:not(:last-of-type) {
     border-radius: 50%;
     filter: blur(90px);
     z-index: 0;
+    transition: all 0.3s ease-in-out; /* Added for smoother resizing */
 }
 
 /* Ensure content stays on top */
@@ -87,7 +89,6 @@ section:not(:last-of-type) {
     margin-top: -72px;
     z-index: 2;
 }
-
 
 .landing-title {
     font-size: 3rem;
@@ -102,7 +103,6 @@ section:not(:last-of-type) {
     color: #0b5c35;
 }
 
-
 .landing-subtext {
     font-size: 1.3rem;
     color: #444;
@@ -111,7 +111,6 @@ section:not(:last-of-type) {
     max-width: 800px; 
     text-align: center; 
 }
-
 
 /* Highlights */
 .landing-highlights {
@@ -176,7 +175,6 @@ section:not(:last-of-type) {
     color: #fff;
 }
 
-
 /* ===== Scroll Indicator: Pulsing Compass (Creative) ===== */
 .scroll-indicator-creative {
     position: absolute;
@@ -235,7 +233,6 @@ section:not(:last-of-type) {
         transform: rotate(360deg);
     }
 }
-
 
 /* Banner Section */
 .data-banner {
@@ -302,7 +299,6 @@ section:not(:last-of-type) {
     right: 0;
     background: linear-gradient(to left, #0d7a49, rgba(13, 122, 73, 0));
 }
-
 
 /* ===== About Section - Standard (Features) ===== */
 .about-section {
@@ -385,12 +381,14 @@ section:not(:last-of-type) {
 
 .about-image img {
     width: 100%;
-    height: 450px;
+    /* --- IMPROVEMENT --- */
+    height: auto;     /* Was 450px. 'auto' respects aspect ratio. */
+    max-height: 450px; /* Added to prevent logo from being too tall */
+    /* ------------------- */
     max-width: 520px;
     border-radius: 16px;
     object-fit: contain;
 }
-
 
 /* ===== Tutorial Section (How It Works) ===== */
 .tutorial-section {
@@ -469,7 +467,6 @@ section:not(:last-of-type) {
     line-height: 1.6;
 }
 
-
 /* ===== About Budget Byahe Section - Modern (Stats/Icons) ===== */
 .about-modern {
     background: linear-gradient(180deg, #f8fff9 0%, #ffffff 100%);
@@ -490,7 +487,6 @@ section:not(:last-of-type) {
     justify-content: space-between;
     gap: 60px;
 }
-
 
 .about-text {
     flex: 1;
@@ -532,11 +528,10 @@ section:not(:last-of-type) {
     transform: translateY(-5px);
 }
 
-.stat-icon {
+.stats-icon {
     color: #0d7a49;
-    font-size: 1.5rem;
+    font-size: 2rem;
 }
-
 
 .about-visual {
     flex: 1;
@@ -671,7 +666,7 @@ section:not(:last-of-type) {
 }
 
 /* ========================================= */
-/* ===== RESPONSIVE CSS  ===== */
+/* ===== RESPONSIVE CSS (IMPROVED)  ===== */
 /* ========================================= */
 
 @media (max-width: 1100px) {
@@ -718,39 +713,62 @@ section:not(:last-of-type) {
     }
     
     .about-image img {
-        height: 350px;
+        max-width: 200px;
     }
 }
 
 
 @media (max-width: 768px) {
+    /* --- Global Spacing --- */
     section {
-        padding: 70px 5%;
+        padding: 60px 5%; /* Reduced vertical padding */
     }
 
     section:not(:last-of-type) {
-        margin-bottom: 70px;
+        margin-bottom: 60px; /* Tighter spacing */
     }
     
+    /* --- Landing Section --- */
     .landing-title {
-        font-size: 2.5rem;
+        font-size: 2.2rem; /* Scaled down */
+        margin-top: 40px;
     }
     
     .landing-subtext {
-        font-size: 1.1rem;
+        font-size: 1rem; /* Scaled down */
     }
 
-    .tutorial-section h2 {
-        font-size: 1.8rem;
+    /* --- Stack buttons earlier --- */
+    .find-route-button, 
+    .how-button {
+        display: block;
+        width: 80%; /* Full width for easy tapping */
+        max-width: 350px; /* Limit max width */
+        margin: 12px auto;
+        padding: 12px 28px; /* Slightly smaller padding */
+    }
+
+    /* --- Typography --- */
+    .tutorial-section h2,
+    .about-text h2,
+    .faq-info h2 {
+        font-size: 1.8rem; /* Standardized mobile heading */
+        line-height: 1.3;
     }
 
     .step-card {
         padding: 25px 20px;
     }
     
+    /* --- Data Banner --- */
+    .data-banner {
+        margin-top: -58px;
+    }
+
     .data-slide span {
         font-size: 1rem;
         gap: 40px;
+        
     }
 
     .data-slide span::after {
@@ -761,31 +779,51 @@ section:not(:last-of-type) {
 
 @media (max-width: 600px) {
     
+    /* --- Tighter Global Spacing --- */
+    section {
+        padding: 50px 5%;
+    }
+
+    /* --- Landing Section --- */
     .landing-title {
-        font-size: 2.3rem;
+        font-size: 2rem; /* Further scaling */
     }
     
     .landing-subtext {
-        font-size: 1rem;
+        font-size: 0.95rem;
         margin-bottom: 30px;
     }
 
-    .find-route-button, 
-    .how-button {
-        display: block;
-        width: 95%;
-        margin: 10px auto;
-    }
+    /* Button rule from 768px is fine, so we remove the 600px duplicate */
     
     .landing-highlights {
         flex-direction: column;
         gap: 15px;
-        align-items: center;
+        align-items: center; /* Was flex-start, center looks better */
         margin-bottom: 30px;
     }
     
+    /* --- Decorative Blob Positioning --- */
+    .landing-section::before {
+        width: 350px;
+        height: 350px;
+        top: -60px;
+        left: -100px;
+        filter: blur(60px);
+    }
+
+    .landing-section::after {
+        width: 300px;
+        height: 300px;
+        bottom: -100px;
+        right: -100px;
+        filter: blur(70px);
+    }
+
+    /* --- Scroll Indicator --- */
     .scroll-indicator-creative {
-        margin-bottom: 40px;
+        /* margin-bottom: 40px; (Absolute position, margin has no effect) */
+        bottom: 20px; /* Pull up slightly from bottom */
     }
     .scroll-compass-img {
         width: 40px;
@@ -793,5 +831,14 @@ section:not(:last-of-type) {
     }
     .scroll-text {
         font-size: 0.8rem;
+    }
+
+    /* --- FAQ --- */
+    .faq-question {
+        font-size: 1rem;
+        padding: 16px 20px;
+    }
+    .faq-answer p {
+        font-size: 0.9rem;
     }
 }

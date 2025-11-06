@@ -2,9 +2,11 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { GoogleMap, useJsApiLoader, DirectionsRenderer, Marker, Polyline } from '@react-google-maps/api';
 import { FaMapMarkerAlt, FaFlag, FaKeyboard, FaArrowRight, FaArrowLeft, FaGasPump, FaMoneyBillWave } from "react-icons/fa";
 import { IoCloseCircleOutline, IoLocationSharp } from "react-icons/io5"; 
-import { MdOutlineDirectionsBus, MdLocalTaxi } from "react-icons/md"; 
+import { MdOutlineDirectionsBus } from "react-icons/md"; 
+import { RiEBike2Line } from "react-icons/ri";
 import './MainFeature.css';
 import switchLogo from './assets/loop.png';
+import NotificationModal from './components/NotificationModal';
 
 const containerStyle = {
     width: '100vw',
@@ -68,6 +70,48 @@ const RecentSearchDropdown = ({ items, onSelect }) => {
     );
 };
 
+// --- Inside your Map component ---
+
+// Define your colors in one place
+const COLORS = {
+    terminal: '#E53E3E', // RED for TODA Terminal
+    all: '#0d7a49',
+    point: '#0084ff',    // GREEN for Transfer Point (from your code)
+    dimmed: '#999999'   // Grey for non-active/dimmed
+};
+
+const getMarkerIcon = (point, activeFilter) => {
+    let color = COLORS.dimmed;
+    let opacity = 0.4;
+    let scale = 8; // Default small scale
+    let zIndex = 1; // Default z-index
+
+    if (activeFilter === 'all') {
+        // Show all markers in their main color
+        color = COLORS.all;
+        opacity = 1.0;
+        scale = (point.type === 'terminal') ? 10 : 8; // Make terminals bigger
+        zIndex = 2;
+    } else if (activeFilter === point.type) {
+        // Show only the active marker type, make it bright and on top
+        color = COLORS[point.type]; // e.g., COLORS['terminal']
+        opacity = 1.0;
+        scale = 10; // Make active markers bigger
+        zIndex = 10; // Bring to front
+    }
+    // If the filter is 'point' but the type is 'terminal', 
+    // it will just use the default dimmed values, which is what we want.
+
+    return {
+        path: window.google.maps.SymbolPath.CIRCLE,
+        scale: scale,
+        fillColor: color,
+        fillOpacity: opacity,
+        strokeWeight: 1,
+        strokeColor: 'white',
+        zIndex: zIndex
+    };
+};
 
 const jeepneyRoutePath = [
     { lat: 14.818701, lng: 120.960834 },
@@ -130,8 +174,10 @@ const transferPoints = [
     { name: "Sitio Bato", lat: 14.841415, lng: 120.979800, type: 'point' },
     { name: "Malawak", lat: 14.844310, lng: 120.980725, type: 'point' },
     { name: "Pintong Bato", lat: 14.840166, lng: 120.979607, type: 'point' },
+    { name: "Santa Maria Jeepney Dropoff", lat: 14.818701, lng: 120.960834, type: 'point' }, 
 
-    { name: "Santa Maria TODA Terminal", lat: 14.818701, lng: 120.960834, type: 'terminal' },     
+    { name: "SMB TODA", lat: 14.81947, lng: 120.96096, type: 'terminal' }, 
+    { name: "SMNG TODA (Guyong)", lat: 14.836540, lng: 120.976779, type: 'terminal' }, 
     { name: "Cityland-Perez TODA Terminal", lat: 14.885105, lng: 121.000043, type: 'terminal' }, 
 ];
 
@@ -279,6 +325,33 @@ const FareCalculator = () => {
     const [recentDestinations, setRecentDestinations] = useState(loadRecentSearches('recentDestinations'));
     const [showRecentOrigins, setShowRecentOrigins] = useState(false);
     const [showRecentDestinations, setShowRecentDestinations] = useState(false);
+    
+    const [isMobileCollapsed, setIsMobileCollapsed] = useState(true);
+
+    const [showNotif, setShowNotif] = useState(false);
+    const [notifMessage, setNotifMessage] = useState('');
+    const [notifType, setNotifType] = useState('info');
+
+    // Helper function to trigger the notification
+    const showNotification = (type, message) => {
+        setNotifType(type);
+        setNotifMessage(message);
+        setShowNotif(true);
+    };
+
+    // Add toggle handler
+    const handleMobileToggle = () => {
+    // === 1. ADD THIS CONSOLE.LOG FOR DEBUGGING ===
+    console.log('Toggling panel. New state will be:', !isMobileCollapsed);
+    setIsMobileCollapsed(prevState => !prevState);
+    };
+
+    // === 2. CREATE A NEW "EXPAND" HANDLER ===
+    // This will be called whenever the user clicks an input.
+    const handleInputFocus = () => {
+        console.log('Input focused, ensuring panel is expanded.');
+        setIsMobileCollapsed(false); // false = expanded
+    };
 
 
     const tutorialSteps = [
@@ -343,7 +416,7 @@ const FareCalculator = () => {
 
     const fillCurrentLocationAsOrigin = () => {
         if (!navigator.geolocation) {
-            alert("Geolocation is not supported by your browser.");
+            showNotification('error', 'Geolocation is not supported by your browser.');
             return;
         }
 
@@ -359,14 +432,13 @@ const FareCalculator = () => {
                             setTimeout(() => tryGeocode(attempt + 1), 500);
                             return;
                         }
-                        alert("Geocoder unavailable. Please check your internet connection.");
+                        showNotification('error', 'Geocoder unavailable. Please check your internet connection.');
                         setIsLocating(false);
                         return;
                     }
 
                     const geocoder = new window.google.maps.Geocoder();
                     geocoder.geocode({ location: { lat: latitude, lng: longitude } }, (results, status) => {
-
                         setIsLocating(false);
                         if (status === "OK" && results?.length) {
                             const address = results[0].formatted_address;
@@ -374,7 +446,7 @@ const FareCalculator = () => {
                             setOrigin(address);
                             setAllowManualInput(true);
                         } else {
-                            alert("Couldn't convert location to address. Try again or check internet connection.");
+                            showNotification('error', "Couldn't convert location to address. Try again or check internet connection.");
                         }
                     });
                 };
@@ -383,12 +455,24 @@ const FareCalculator = () => {
             },
             (error) => {
                 setIsLocating(false);
-                if (error.code === error.PERMISSION_DENIED) {
-                    alert("Location permission denied. Please enable GPS or allow access in browser settings.");
-                } else {
-                    alert("Unable to retrieve location. Please make sure GPS is enabled.");
+                
+                // --- NEW: More descriptive error handling ---
+                switch (error.code) {
+                    case error.PERMISSION_DENIED:
+                        showNotification('error', 'Location permission denied. Please allow access in your browser and system settings.');
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        showNotification('error', 'Location information is currently unavailable. Please try again.');
+                        break;
+                    case error.TIMEOUT:
+                        showNotification('info', 'Could not get an accurate location in time. Please try again, or move to an area with a clearer view of the sky.');
+                        break;
+                    default:
+                        showNotification('error', 'An unknown error occurred while trying to get your location.');
+                        break;
                 }
             },
+            // This is your (correct) options object
             { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
         );
     };
@@ -654,7 +738,7 @@ const processRoute = useCallback(async (route, index) => {
         const destinationVal = destinationInput.value.trim();
 
         if (!originVal || !destinationVal) {
-            alert('Please enter both origin and destination.');
+           showNotification('info', 'Please enter both origin and destination.');
             return;
         }
 
@@ -739,7 +823,7 @@ const processRoute = useCallback(async (route, index) => {
 
 
             } else {
-                alert('Could not find route. Please check your locations and try again.');
+                showNotification('error', 'Could not find route. Please check your locations and try again.');
             }
         });
     };
@@ -880,30 +964,33 @@ const processRoute = useCallback(async (route, index) => {
             {/* --- NEW MAP FILTER UI BLOCK --- */}
             <div className="map-filters-bar">
                 <button 
-                    className={`filter-btn ${activeFilter === 'all' ? 'active' : ''}`}
+                    className={`filter-btn all btn ${activeFilter === 'all' ? 'active' : ''}`}
                     onClick={() => setActiveFilter('all')}
                 >
                     <IoLocationSharp size={20} />
                     All Points
                 </button>
                 <button 
-                    className={`filter-btn ${activeFilter === 'point' ? 'active' : ''}`}
+                    className={`filter-btn transfer btn ${activeFilter === 'point' ? 'active' : ''}`}
                     onClick={() => setActiveFilter('point')}
                 >
                     <MdOutlineDirectionsBus size={20} />
                     Transfer Points
                 </button>
                 <button 
-                    className={`filter-btn ${activeFilter === 'terminal' ? 'active' : ''}`}
+                    className={`filter-btn terminal btn ${activeFilter === 'terminal' ? 'active' : ''}`}
                     onClick={() => setActiveFilter('terminal')}
                 >
-                    <MdLocalTaxi size={20} />
+                    <RiEBike2Line size={20} />
                     TODA Terminal
                 </button>
             </div>
 
 
-            <div className={`fare-container ${!isPanelOpen ? 'closed' : ''}`}>
+            <div className={`fare-container ${isPanelOpen ? '' : 'closed'} ${isMobileCollapsed ? 'collapsed' : ''}`}>
+                <div className="mobile-toggle-handle" onClick={handleMobileToggle}>
+                    {/* The icon span is here, but the handle itself is the clickable area */}
+                </div>
                 {/* Collapse/Expand Toggle Button */}
                 <div className="panel-toggle" onClick={togglePanel}>
                     <FaArrowLeft size={20} className="toggle-icon close-icon" />
@@ -925,11 +1012,14 @@ const processRoute = useCallback(async (route, index) => {
                                         ref={originRef}
                                         id='origin'
                                         onFocus={() => {
+                                            // === ADD THIS LINE ===
+                                            handleInputFocus(); // This expands the panel
+
+                                            // Your existing logic:
                                             if(!allowManualInput) setShowLocationModal(true);
-                                            setShowRecentOrigins(true); // Show recent searches on focus
+                                            setShowRecentOrigins(true); 
                                         }}
                                         onBlur={() => {
-                                            // Delay hiding to allow clicks on dropdown items to register
                                             setTimeout(() => setShowRecentOrigins(false), 200);
                                         }}
                                     />
@@ -958,9 +1048,14 @@ const processRoute = useCallback(async (route, index) => {
                                         placeholder="Enter Destination" 
                                         ref={destinationRef} 
                                         id='destination' 
-                                        onFocus={() => setShowRecentDestinations(true)} // Show recent searches on focus
+                                        onFocus={() => {
+                                            // === ADD THIS LINE ===
+                                            handleInputFocus(); // This expands the panel
+
+                                            // Your existing logic:
+                                            setShowRecentDestinations(true);
+                                        }}
                                         onBlur={() => {
-                                            // Delay hiding to allow clicks on dropdown items to register
                                             setTimeout(() => setShowRecentDestinations(false), 200);
                                         }}
                                     />
@@ -1127,24 +1222,20 @@ const processRoute = useCallback(async (route, index) => {
                 {/* --- RENDER FILTERED MARKERS --- */}
                 {getFilteredTransferPoints().map((point, index) => (
                     <Marker
-                        key={index}
-                        position={{ lat: point.lat, lng: point.lng }}
-                        label={{
-                            text: point.name.charAt(0),
-                            color: 'white',
-                            fontWeight: 'bold'
-                        }}
-                        icon={{
-                            path: window.google.maps.SymbolPath.CIRCLE,
-                            scale: point.type === 'terminal' ? 10 : 8, 
-                            fillColor: point.type === 'terminal' ? '#0d7a49' : '#00A86B', 
-                            fillOpacity: 1,
-                            strokeWeight: 1,
-                            strokeColor: 'white'
-                        }}
-                        title={point.name + (point.type === 'terminal' ? " (TODA Terminal)" : " (Transfer Point)")}
+                            key={index}
+                            position={{ lat: point.lat, lng: point.lng }}
+                            title={point.name + (point.type === 'terminal' ? " (TODA Terminal)" : " (Transfer Point)")}
+                            
+                            // 👇 This is the only part that changes
+                            icon={getMarkerIcon(point, activeFilter)}
+                            
+                            label={{
+                                text: point.name.charAt(0),
+                                color: 'white',
+                                fontWeight: 'bold'
+                            }}
                     />
-                ))}
+                    ))}
             </GoogleMap>
             {isLocating && (
                 <div className="location-loading-overlay">
@@ -1226,6 +1317,15 @@ const processRoute = useCallback(async (route, index) => {
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* Render the notification modal when showNotif is true */}
+            {showNotif && (
+                <NotificationModal
+                type={notifType}
+                message={notifMessage}
+                onClose={() => setShowNotif(false)}
+                />
             )}
         </div>
     ) : (<p>Loading map...</p>);

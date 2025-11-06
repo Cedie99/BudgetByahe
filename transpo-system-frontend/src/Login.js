@@ -24,7 +24,9 @@ function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  
 
   // Notification modal state
   const [showNotif, setShowNotif] = useState(false);
@@ -48,6 +50,7 @@ function Login() {
   // --- Email & Password Login ---
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
     try {
       const userCred = await signInWithEmailAndPassword(auth, email, password);
       const user = userCred.user;
@@ -92,6 +95,8 @@ function Login() {
       setNotifType('error');
       setNotifMessage(errorMsg);
       setShowNotif(true);
+    }finally {
+      setIsLoading(false); 
     }
   };
 
@@ -358,7 +363,19 @@ function Login() {
             </div>
 
             <div className="auth-actions auth-actions-centered">
-              <button className="btn-primary" type="submit">Log In</button>
+              <button
+                className="btn-primary"
+                type="submit"
+                // Disable if this form is loading OR if a social login is in progress
+                disabled={isLoading || googleLoading || facebookLoading}
+              >
+                {isLoading ? (
+                  // Reuse the same spinner as your social buttons
+                  <div className="auth-spinner"></div>
+                ) : (
+                  'Log In'
+                )}
+              </button>
             </div>
 
             <div style={{marginTop:12, textAlign:'center'}}>

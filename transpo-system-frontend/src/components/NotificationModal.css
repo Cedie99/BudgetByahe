@@ -1,108 +1,215 @@
+/* Using CSS variables for easy theming and consistency.
+*/
+:root {
+  --success-bg: #e6f7f0;
+  --success-color: #0d7a49;
+  --error-bg: #fdeeee;
+  --error-color: #dc3545;
+  --info-bg: #ebf5ff;
+  --info-color: #3b82f6;
+  --text-dark: #1a1a1a;
+  --text-light: #555;
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
 .notification-overlay {
   position: fixed;
   inset: 0;
   z-index: 99999;
-  /* Reduced opacity for a slightly less intrusive backdrop */
-  background: rgba(0, 0, 0, 0.4); 
+  background: rgba(0, 0, 0, 0.3); /* Lighter backdrop */
   display: flex;
-  align-items: center;
+  /* Aligns modal to the top-center, not dead-center */
+  align-items: flex-start;
   justify-content: center;
+  padding-top: 5vh;
 }
 
 .notification-modal {
-  background: #fff;
-  border-radius: 12px; /* Slightly reduced border-radius for a cleaner look */
-  /* Modern, diffused shadow for depth */
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.05); 
-  width: 340px; /* Slightly wider */
+  position: relative;
+  display: flex;
+  align-items: flex-start; /* Aligns icon and text to the top */
+  gap: 16px; /* Space between icon and text content */
+  width: 400px;
   max-width: 90%;
-  padding: 0; /* Removed padding here, moved to body */
-  text-align: center;
-  overflow: hidden; /* Ensures color band stays within border */
-  /* Increased duration and complexity for a smoother, modern animation */
-  animation: popIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); 
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 20px;
+  overflow: hidden; /* Crucial for the timer bar */
+  
+  /* Entrance animation */
+  animation: slideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-/* New: Dedicated accent band for visual interest */
-.notification-modal::before {
-  content: '';
-  display: block;
-  height: 8px; /* Accent height */
-  width: 100%;
+/* Exit animation */
+.notification-modal.exiting {
+  animation: slideOut 0.3s ease-out forwards;
 }
 
-.notification-modal.success::before {
-  background-color: #0d7a49; /* Primary Success Green */
+/* 1. Icon Wrapper 
+  This is the colored circle behind the icon
+*/
+.notification-icon-wrapper {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
 }
 
-.notification-modal.error::before {
-  background-color: #dc3545; /* Modern Error Red */
-}
-
-/* Wrapper for padded content */
+/* 2. Content (Header + Body) 
+*/
 .notification-content {
-    padding: 25px 30px 20px 30px;
-}
-
-.notification-modal.info {
-  border-top: 6px solid #3b82f6;
+  flex-grow: 1;
+  /* Make space for the close button on the right */
+  padding-right: 20px; 
 }
 
 .notification-header {
-  font-size: 1.35rem; /* Slightly larger title */
-  font-weight: 700; /* Bolder title */
-  margin-bottom: 15px; /* More spacing */
-  
-  /* Resetting color to inherit from type class for dynamic coloring */
-  color: #333; 
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.notification-modal.success .notification-header {
-  color: #0d7a49; /* Header text color matches accent */
-}
-
-.notification-modal.error .notification-header {
-  color: #dc3545; /* Header text color matches accent */
-}
-
-.notification-modal.info .notification-header {
-  color: #3b82f6;
+  font-size: 1.15rem; /* Slightly smaller, more refined */
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 6px;
 }
 
 .notification-body {
-  color: #555; /* Softer body text color */
-  font-size: 1rem;
+  color: var(--text-light);
+  font-size: 0.95rem;
   line-height: 1.5;
-  margin-bottom: 25px; /* Increased space before button */
 }
 
-.notification-btn {
-  background-color: #0d7a49;
-  color: #fff;
+/* 3. Close Button 
+*/
+.notification-close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: transparent;
   border: none;
-  padding: 10px 25px; /* Larger hit area */
-  border-radius: 6px; /* Slightly more defined button corners */
-  font-weight: 600; /* Bolder button text */
   cursor: pointer;
-  transition: background-color 0.2s, transform 0.2s; /* Added transform transition */
+  color: #999;
+  padding: 4px; /* Makes the click target bigger */
+  border-radius: 50%;
+  transition: all 0.2s;
 }
 
-.notification-btn:hover {
-  background-color: #0a633a;
-  transform: translateY(-1px); /* Subtle lift on hover */
+.notification-close-btn:hover {
+  color: var(--text-dark);
+  background-color: #f0f0f0;
 }
 
-/* Keyframe for the smoother, modern pop-in effect */
-@keyframes popIn {
+/* 4. Timer Bar
+*/
+.notification-timer-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 4px;
+  width: 100%;
+  
+  /* This animation shrinks the bar from 100% to 0% width over 5s */
+  animation: shrink 5s linear forwards;
+}
+
+/* Dynamic Colors Based on Type 
+*/
+
+/* --- Success --- */
+.notification-modal.success .notification-icon-wrapper {
+  background-color: var(--success-bg);
+  color: var(--success-color);
+}
+.notification-modal.success .notification-timer-bar {
+  background-color: var(--success-color);
+}
+
+/* --- Error --- */
+.notification-modal.error .notification-icon-wrapper {
+  background-color: var(--error-bg);
+  color: var(--error-color);
+}
+.notification-modal.error .notification-timer-bar {
+  background-color: var(--error-color);
+}
+
+/* --- Info --- */
+.notification-modal.info .notification-icon-wrapper {
+  background-color: var(--info-bg);
+  color: var(--info-color);
+}
+.notification-modal.info .notification-timer-bar {
+  background-color: var(--info-color);
+}
+
+/* Keyframe Animations
+*/
+
+/* Timer bar animation */
+@keyframes shrink {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+/* Modal entrance animation */
+@keyframes slideIn {
   from {
     opacity: 0;
-    transform: scale(0.85); /* Scales up from a smaller size */
+    transform: translateY(-20px) scale(0.98);
   }
   to {
     opacity: 1;
-    transform: scale(1);
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Modal exit animation */
+@keyframes slideOut {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.98);
+  }
+}
+
+/* For mobile devices (e.g., screens 480px wide or less) */
+@media (max-width: 480px) {
+  .notification-overlay {
+    padding-top: 3vh;
+  }
+
+  .notification-modal {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .notification-icon-wrapper {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .notification-icon-wrapper svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .notification-header {
+    font-size: 1.1rem;
+  }
+
+  .notification-body {
+    font-size: 0.9rem;
+  }
+
+  .notification-close-btn {
+    top: 8px;
+    right: 8px;
   }
 }
