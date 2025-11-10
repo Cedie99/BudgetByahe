@@ -267,6 +267,12 @@ async function generateInstructionGroq(context) {
                 })
             });
 
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                console.warn(`${model} failed with status ${response.status}:`, errorData);
+                continue;
+            }
+
             const data = await response.json();
             
             if (data.choices?.[0]?.message?.content) {
@@ -281,11 +287,16 @@ async function generateInstructionGroq(context) {
             }
 
         } catch (err) {
-            console.warn(`${model} failed`, err);
+            console.warn(`${model} failed:`, err.message);
         }
     }
 
-    throw new Error("⚠️ All Groq AI models failed. Please check your API key.");
+    // Check if API key is missing or invalid
+    if (!process.env.REACT_APP_GROQ_API_KEY) {
+        throw new Error("⚠️ Groq API key is missing. Please add REACT_APP_GROQ_API_KEY to your .env file.");
+    }
+
+    throw new Error("⚠️ All Groq AI models failed. Please check your API key and internet connection.");
 }
 // --- END of generateInstructionGroq function ---
 
@@ -582,22 +593,27 @@ const processRoute = useCallback(async (route, index) => {
         transfers = [`Take a tricycle directly from your origin to your destination. (Estimated Fare: ₱${calculatedFare})`];
         walkabilityInfo = '';
 
-        const aiSuggestion = await generateInstructionGroq({
-            transportMode: 'tricycle', 
-            originOnRoute: false,
-            destinationOnRoute: false,
-            distance: distanceValue.toFixed(2),
-            baseFare: baseFareFormatted,
-            fare: calculatedFare,
-            discountApplied,
-            transfers, 
-            walkability: walkabilityInfo, 
-            routeSummary: 'local streets', 
-            origin: origin, // ADDED
-            destination: destination, // ADDED
-        });
+        try {
+            const aiSuggestion = await generateInstructionGroq({
+                transportMode: 'tricycle', 
+                originOnRoute: false,
+                destinationOnRoute: false,
+                distance: distanceValue.toFixed(2),
+                baseFare: baseFareFormatted,
+                fare: calculatedFare,
+                discountApplied,
+                transfers, 
+                walkability: walkabilityInfo, 
+                routeSummary: 'local streets', 
+                origin: origin, // ADDED
+                destination: destination, // ADDED
+            });
 
-        transportModeText = `⚠️ TRICYCLE RIDE REQUIRED! This trip does not pass through the main jeepney route and requires a full Tricycle Ride. The fare is an (estimate) based on distance and local rates (fares can be negotiated).<br/><br/>${aiSuggestion}`;
+            transportModeText = `⚠️ TRICYCLE RIDE REQUIRED! This trip does not pass through the main jeepney route and requires a full Tricycle Ride. The fare is an (estimate) based on distance and local rates (fares can be negotiated).<br/><br/>${aiSuggestion}`;
+        } catch (error) {
+            console.error('AI generation failed for tricycle route:', error);
+            transportModeText = `⚠️ TRICYCLE RIDE REQUIRED! This trip does not pass through the main jeepney route and requires a full Tricycle Ride.<br/><br/>Take a tricycle directly from ${origin} to ${destination}. The estimated fare is ₱${calculatedFare} (rates can be negotiated with the driver).`;
+        }
         
         return {
             fare: calculatedFare,
@@ -674,22 +690,36 @@ const processRoute = useCallback(async (route, index) => {
         
         setIsAiProcessing(true);
 
-        const aiSuggestion = await generateInstructionGroq({
-            transportMode: 'jeepney', 
-            originOnRoute,
-            destinationOnRoute,
-            distance: distanceValue.toFixed(2),
-            baseFare: baseFareFormatted,
-            fare: calculatedFare,
-            discountApplied,
-            transfers, 
-            walkability: walkabilityInfo,
-            routeSummary: routeSummary,
-            origin: origin, // ADDED
-            destination: destination, // ADDED
-        });
+        try {
+            const aiSuggestion = await generateInstructionGroq({
+                transportMode: 'jeepney', 
+                originOnRoute,
+                destinationOnRoute,
+                distance: distanceValue.toFixed(2),
+                baseFare: baseFareFormatted,
+                fare: calculatedFare,
+                discountApplied,
+                transfers, 
+                walkability: walkabilityInfo,
+                routeSummary: routeSummary,
+                origin: origin, // ADDED
+                destination: destination, // ADDED
+            });
 
-        transportModeText = aiSuggestion.replace(/\n/g, '<br/>');
+            transportModeText = aiSuggestion.replace(/\n/g, '<br/>');
+        } catch (error) {
+            console.error('AI generation failed for jeepney route:', error);
+            // Fallback to basic route description
+            let fallbackText = '<b>Route Instructions:</b><br/><br/>';
+            transfers.forEach((step, idx) => {
+                fallbackText += `${idx + 1}. ${step}<br/>`;
+            });
+            if (walkabilityInfo) {
+                fallbackText += `<br/>${walkabilityInfo}`;
+            }
+            fallbackText += `<br/><br/><b>Fare:</b> ₱${calculatedFare} (Distance: ${distanceValue.toFixed(2)} km)`;
+            transportModeText = fallbackText;
+        }
 
         return {
             fare: calculatedFare,
@@ -782,44 +812,50 @@ const processRoute = useCallback(async (route, index) => {
                 
                 // Process all routes to get fares and distance info
                 setIsAiProcessing(true);
-                const processedResults = await Promise.all(
-                    allRoutes.map((route, index) => processRoute(route, index))
-                );
-                setIsAiProcessing(false);
+                try {
+                    const processedResults = await Promise.all(
+                        allRoutes.map((route, index) => processRoute(route, index))
+                    );
+                    setIsAiProcessing(false);
 
-                setRouteComparisons(processedResults);
+                    setRouteComparisons(processedResults);
 
-                // --- Determine Shortest (Most Efficient) Route ---
-                let shortestRoute = processedResults[0];
-                for (const res of processedResults) {
-                    if (parseFloat(res.distance) < parseFloat(shortestRoute.distance)) {
-                        shortestRoute = res;
+                    // --- Determine Shortest (Most Efficient) Route ---
+                    let shortestRoute = processedResults[0];
+                    for (const res of processedResults) {
+                        if (parseFloat(res.distance) < parseFloat(shortestRoute.distance)) {
+                            shortestRoute = res;
+                        }
                     }
-                }
-                setShortestRouteIndex(shortestRoute.routeIndex);
-                
-                // --- Determine Cheapest Route ---
-                // Only consider routes with valid numeric fares (not N/A)
-                const viableRoutes = processedResults.filter(res => res.fare !== 'N/A' && parseFloat(res.fare) > 0);
-                
-                let cheapestRoute = viableRoutes.length > 0 ? viableRoutes[0] : shortestRoute; // Default to shortest if none are viable
-                for (const res of viableRoutes) {
-                    if (parseFloat(res.fare) < parseFloat(cheapestRoute.fare)) {
-                        cheapestRoute = res;
+                    setShortestRouteIndex(shortestRoute.routeIndex);
+                    
+                    // --- Determine Cheapest Route ---
+                    // Only consider routes with valid numeric fares (not N/A)
+                    const viableRoutes = processedResults.filter(res => res.fare !== 'N/A' && parseFloat(res.fare) > 0);
+                    
+                    let cheapestRoute = viableRoutes.length > 0 ? viableRoutes[0] : shortestRoute; // Default to shortest if none are viable
+                    for (const res of viableRoutes) {
+                        if (parseFloat(res.fare) < parseFloat(cheapestRoute.fare)) {
+                            cheapestRoute = res;
+                        }
                     }
+                    setCheapestFareRouteIndex(cheapestRoute.routeIndex);
+
+
+                    // Update DirectionsResult with all routes for rendering
+                    setDirectionsResult(result);
+                    // Set the selected route to the most efficient (shortest) one initially
+                    setSelectedRouteIndex(shortestRoute.routeIndex);
+
+                    // Update the single display states for the selected route
+                    setDistanceKm(shortestRoute.distance);
+                    setFare(shortestRoute.fare);
+                    setTransportMode(shortestRoute.transportMode);
+                } catch (error) {
+                    setIsAiProcessing(false);
+                    console.error('Error processing routes with AI:', error);
+                    showNotification('error', 'AI processing failed. Please check your Groq API key in the .env file.');
                 }
-                setCheapestFareRouteIndex(cheapestRoute.routeIndex);
-
-
-                // Update DirectionsResult with all routes for rendering
-                setDirectionsResult(result);
-                // Set the selected route to the most efficient (shortest) one initially
-                setSelectedRouteIndex(shortestRoute.routeIndex);
-
-                // Update the single display states for the selected route
-                setDistanceKm(shortestRoute.distance);
-                setFare(shortestRoute.fare);
-                setTransportMode(shortestRoute.transportMode);
 
 
             } else {
