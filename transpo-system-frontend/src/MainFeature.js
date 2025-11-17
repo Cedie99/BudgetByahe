@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { GoogleMap, useJsApiLoader, DirectionsRenderer, Marker, Polyline } from '@react-google-maps/api';
 import { FaMapMarkerAlt, FaFlag, FaKeyboard, FaArrowRight, FaArrowLeft, FaGasPump, FaMoneyBillWave } from "react-icons/fa";
 import { IoCloseCircleOutline, IoLocationSharp } from "react-icons/io5"; 
@@ -76,7 +76,7 @@ const RecentSearchDropdown = ({ items, onSelect }) => {
 const COLORS = {
     terminal: '#E53E3E', // RED for TODA Terminal
     all: '#0d7a49',
-    point: '#0084ff',    // GREEN for Transfer Point (from your code)
+    point: '#0084ff',    // BLUE for Transfer Point
     dimmed: '#999999'   // Grey for non-active/dimmed
 };
 
@@ -88,7 +88,7 @@ const getMarkerIcon = (point, activeFilter) => {
 
     if (activeFilter === 'all') {
         // Show all markers in their main color
-        color = COLORS.all;
+        color = COLORS.all; // Use point's type color
         opacity = 1.0;
         scale = (point.type === 'terminal') ? 10 : 8; // Make terminals bigger
         zIndex = 2;
@@ -99,8 +99,6 @@ const getMarkerIcon = (point, activeFilter) => {
         scale = 10; // Make active markers bigger
         zIndex = 10; // Bring to front
     }
-    // If the filter is 'point' but the type is 'terminal', 
-    // it will just use the default dimmed values, which is what we want.
 
     return {
         path: window.google.maps.SymbolPath.CIRCLE,
@@ -113,96 +111,45 @@ const getMarkerIcon = (point, activeFilter) => {
     };
 };
 
-const jeepneyRoutePath = [
-    { lat: 14.818701, lng: 120.960834 },
-    { lat: 14.82239, lng: 120.96436 },
-    { lat: 14.8225, lng: 120.96658 },
-    { lat: 14.82485, lng: 120.96898 },
-    { lat: 14.8292, lng: 120.97199 },
-    { lat: 14.83209, lng: 120.974 },
-    { lat: 14.83445, lng: 120.97565 },
-    { lat: 14.83564, lng: 120.9762 },
-    { lat: 14.83826, lng: 120.97812 },
-    { lat: 14.84139, lng: 120.9799 },
-    { lat: 14.84326, lng: 120.98037 },
-    { lat: 14.84515, lng: 120.98068 },
-    { lat: 14.84762, lng: 120.98084 },
-    { lat: 14.84964, lng: 120.98159 },
-    { lat: 14.85091, lng: 120.98355 },
-    { lat: 14.85247, lng: 120.98507 },
-    { lat: 14.85407, lng: 120.98645 },
-    { lat: 14.85539, lng: 120.98742 },
-    { lat: 14.85769, lng: 120.98911 },
-    { lat: 14.85873, lng: 120.9898 },
-    { lat: 14.86002, lng: 120.99041 },
-    { lat: 14.86191, lng: 120.99126 },
-    { lat: 14.86319, lng: 120.99189 },
-    { lat: 14.86427, lng: 120.99306 },
-    { lat: 14.86497, lng: 120.99475 },
-    { lat: 14.86594, lng: 120.99661 },
-    { lat: 14.86692, lng: 121.00007 },
-    { lat: 14.86794, lng: 121.00006 },
-    { lat: 14.8706, lng: 121.00216 },
-    { lat: 14.87186, lng: 121.00504 },
-    { lat: 14.87374, lng: 121.00705 },
-    { lat: 14.87731, lng: 121.00992 },
-    { lat: 14.88144, lng: 121.01217 },
-    { lat: 14.88721, lng: 121.01612 },
-    { lat: 14.89081, lng: 121.02019 },
-    { lat: 14.89277, lng: 121.02316 },
-    { lat: 14.89666, lng: 121.02583 },
-    { lat: 14.89771, lng: 121.02889 },
-    { lat: 14.89973, lng: 121.03412 },
-    { lat: 14.90155, lng: 121.036 },
-    { lat: 14.9057, lng: 121.03863 },
-    { lat: 14.90581, lng: 121.03882 },
-    { lat: 14.90595, lng: 121.03867 },
-    { lat: 14.90581, lng: 121.03862 },
-];
 
-const transferPoints = [
-    { name: "Norzagaray Crossing", lat: 14.90581, lng: 121.03862, type: 'point' }, 
-    { name: "Partida", lat: 14.893597, lng: 121.023452, type: 'point' },
-    { name: "Pulong Yantok", lat: 14.890642, lng: 121.019969, type: 'point' },
-    { name: "Kanto of Perez", lat: 14.888687, lng: 121.017536, type: 'point' },
-    { name: "Garden Village", lat: 14.876638, lng: 121.009510, type: 'point' },
-    { name: "Tierra", lat: 14.873335992345256, lng: 121.00673970657967, type: 'point' },
-    { name: "Cityland", lat: 14.87055514685738, lng: 121.0021162271413, type: 'point' },
-    { name: "Balasing", lat: 14.865172, lng: 120.995133, type: 'point' },
-    { name: "Bangka Bangka", lat: 14.864257, lng: 120.992826, type: 'point' },
-    { name: "Caypombo", lat: 14.847646, lng: 120.980770, type: 'point' },
-    { name: "Sitio Bato", lat: 14.841415, lng: 120.979800, type: 'point' },
-    { name: "Malawak", lat: 14.844310, lng: 120.980725, type: 'point' },
-    { name: "Pintong Bato", lat: 14.840166, lng: 120.979607, type: 'point' },
-    { name: "Santa Maria Jeepney Dropoff", lat: 14.818701, lng: 120.960834, type: 'point' }, 
-
-    { name: "SMB TODA", lat: 14.81947, lng: 120.96096, type: 'terminal' }, 
-    { name: "SMNG TODA (Guyong)", lat: 14.836540, lng: 120.976779, type: 'terminal' }, 
-    { name: "Cityland-Perez TODA Terminal", lat: 14.885105, lng: 121.000043, type: 'terminal' }, 
-];
-
-const getNearestTransferPoint = (point) => {
+// --- UPDATED: Function now requires the list of all points ---
+const getNearestPoint = (coords, pointList) => {
     let nearest = null;
     let minDistance = Infinity;
 
-    for (const transfer of transferPoints) {
-        const distance = Math.sqrt(
-            Math.pow(point.lat - transfer.lat, 2) +
-            Math.pow(point.lng - transfer.lng, 2)
-        );
+    if (!Array.isArray(pointList) || pointList.length === 0) {
+        return { point: null, distance: Infinity };
+    }
+
+    for (const item of pointList) {
+        // Ensure item has valid lat/lng. Handles both terminals (lat/lng)
+        // and destinations (latitude/longitude)
+        const pointLat = parseFloat(item.latitude || item.lat);
+        const pointLng = parseFloat(item.longitude || item.lng);
+
+        if (isNaN(pointLat) || isNaN(pointLng)) continue; // Skip invalid data
+
+        // Using simple squared distance for speed (faster than Math.sqrt)
+        const distance =
+            Math.pow(coords.lat - pointLat, 2) +
+            Math.pow(coords.lng - pointLng, 2);
+        
         if (distance < minDistance) {
             minDistance = distance;
-            nearest = transfer;
+            nearest = item;
         }
     }
-    return nearest;
+    
+    // Return distance in the same "degree" units as the threshold
+    return { point: nearest, distance: Math.sqrt(minDistance) }; 
 };
+// --- END OF NEW HELPER FUNCTION ---
 
 // --- START of generateInstructionGroq function (MODIFIED for guaranteed clean output) ---
 async function generateInstructionGroq(context) {
 
     const discountText = context.discountApplied 
-        ? `A 20% PWD/Student/Senior discount (Final Fare: ₱${context.fare}, Base Fare: ₱${context.baseFare}) was applied.` 
+        ? `A 20% PWD/Student/Senior discount was applied to the total base fare (Final Fare: ₱${context.fare}, Base Fare: ₱${context.baseFare}).` 
         : `Regular fare applied.`;
 
     // Reverting to simpler stepsBlock creation since the raw steps from processRoute are cleaner now.
@@ -226,9 +173,11 @@ async function generateInstructionGroq(context) {
         ? "Your sole task is to convert the raw travel steps into a clear, concise, and friendly single conversational instruction for the passenger, emphasizing that they are taking a special tricycle trip directly from their origin to their destination."
         : "Your sole task is to convert the following raw travel steps into a clear, concise, and friendly numbered list of directions for the passenger. Use simple, conversational English that is easy for a local commuter to follow. Use an appropriate emoji (like 🚌 or 🛵) at the start of each step";
 
+    // --- *** KEY IMPROVEMENT *** ---
+    // Updated fareContext to clearly state the *total* fare and what it includes.
     const fareContext = context.transportMode === 'tricycle'
         ? `Tricycle trip (Special Ride). Total Distance: ${context.distance} km. Estimated Fare: ₱${context.fare}. ${discountText}`
-        : `Jeepney and Tricycle transfer. Total Distance: ${context.distance} km. Fare Calculation: Base Fare ₱${context.baseFare}. ${discountText}`;
+        : `Jeepney and Tricycle transfer. Total Distance: ${context.distance} km. Total Estimated Fare: ₱${context.fare}. ${discountText} This total includes the jeepney fare and estimated fares for any necessary tricycle transfers.`;
 
     const prompt = `
         ${persona}
@@ -298,10 +247,11 @@ async function generateInstructionGroq(context) {
 
     throw new Error("⚠️ All Groq AI models failed. Please check your API key and internet connection.");
 }
-// --- END of generateInstructionGroq function ---
 
 
 const R = 6371; // Radius of Earth in kilometers (for Haversine formula)
+
+const API_URL = "http://127.0.0.1:8000/api";
 
 const FareCalculator = () => {
     const [origin, setOrigin] = useState('');
@@ -343,6 +293,185 @@ const FareCalculator = () => {
     const [notifMessage, setNotifMessage] = useState('');
     const [notifType, setNotifType] = useState('info');
 
+    const [jeepneyFareTable, setJeepneyFareTable] = useState([]);
+    const [tricycleFareTable, setTricycleFareTable] = useState([]);
+    const [isLoadingFares, setIsLoadingFares] = useState(true);
+
+    // --- NEW STATE for fetched terminals ---
+    const [dbTerminals, setDbTerminals] = useState([]);
+
+    // --- NEW STATE for fetched transfer points ---
+    const [dbTransferPoints, setDbTransferPoints] = useState([]);
+
+    // --- NEW STATE: This state will now hold ALL routes from the DB ---
+    const [allDbRoutes, setAllDbRoutes] = useState([]); 
+
+
+    // --- *** NEW HELPER FUNCTION 1 *** ---
+    // Calculates distance between two lat/lng points using Haversine formula
+    const haversineDistance = (coords1, coords2) => {
+        const lat1 = coords1.lat || coords1.latitude;
+        const lng1 = coords1.lng || coords1.longitude;
+        const lat2 = coords2.lat || coords2.latitude;
+        const lng2 = coords2.lng || coords2.longitude;
+
+        if (isNaN(lat1) || isNaN(lng1) || isNaN(lat2) || isNaN(lng2)) {
+            return 0;
+        }
+
+        const toRad = (x) => (x * Math.PI) / 180;
+        const dLat = toRad(lat2 - lat1);
+        const dLon = toRad(lng2 - lng1);
+        
+        const a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        
+        return R * c; // Distance in km
+    };
+
+    // --- *** NEW HELPER FUNCTION 2 *** ---
+    // Centralized logic for "Special Trip" tricycle fare
+    const calculateTricycleSpecialTripFare = (distance, discountType) => {
+        // Base fare: ₱40 for first 1km, ₱8 for each additional km
+        const baseFare = 40 + Math.max(0, (distance - 1) * 8); 
+        const discountApplied = discountType !== 'none';
+        const finalFare = discountApplied ? baseFare * 0.80 : baseFare;
+        
+        return {
+            baseFare: baseFare,
+            finalFare: finalFare,
+            discountApplied: discountApplied
+        };
+    };
+
+    // --- UPDATED: Combine DB terminals and DB transfer points ---
+    const allTransferPoints = useMemo(() => {
+        // Map DB terminals to the format your map expects
+        const formattedDbTerminals = dbTerminals.map(terminal => ({
+            id: terminal.id,
+            name: terminal.name,
+            lat: parseFloat(terminal.latitude),  // Ensure it's a number
+            lng: parseFloat(terminal.longitude), // Ensure it's a number
+            type: 'terminal' // Assign the type 'terminal'
+        }));
+
+        // Map DB transfer points to the format
+        const formattedDbTransferPoints = dbTransferPoints.map(point => ({
+            id: point.id,
+            name: point.name,
+            lat: parseFloat(point.latitude),
+            lng: parseFloat(point.longitude),
+            type: point.type || 'point' // Default to 'point'
+        }));
+        
+        // Return the combined array
+        return [
+            ...formattedDbTransferPoints, // <-- Use dynamic points
+            ...formattedDbTerminals
+        ];
+    }, [dbTerminals, dbTransferPoints]); // <-- UPDATED dependencies
+
+
+    useEffect(() => {
+        const hasSeen = localStorage.getItem('hasSeenTutorial');
+        if (hasSeen === 'true') {
+            setShowTutorial(false);
+        }
+
+        // Fetch fare data when component mounts
+        const fetchFareData = async () => {
+          setIsLoadingFares(true);
+          try {
+            // Fetch LTFRB (Jeepney) data
+            const jeepRes = await fetch(`${API_URL}/fares/LTFRB`);
+            if (jeepRes.ok) {
+              const jeepData = await jeepRes.json();
+              setJeepneyFareTable(jeepData.data || []); // Store just the data array
+            } else {
+              console.error("Failed to fetch Jeepney fares");
+            }
+
+            // Fetch LGU (Tricycle) data
+            const trikeRes = await fetch(`${API_URL}/fares/LGU`);
+            if (trikeRes.ok) {
+              const trikeData = await trikeRes.json();
+              setTricycleFareTable(trikeData.data || []); // Store just the data array
+            } else {
+              console.error("Failed to fetch Tricycle fares");
+            }
+
+          } catch (error) {
+            console.error("Error fetching fare data:", error);
+            showNotification('error', 'Could not load fare data from server. Using fallback calculations.');
+          } finally {
+            setIsLoadingFares(false);
+          }
+        };
+
+        // --- UPDATED: Fetch terminal data ---
+        const fetchTerminalData = async () => {
+          try {
+            const res = await fetch(`${API_URL}/terminals`);
+            if (res.ok) {
+              const data = await res.json();
+              setDbTerminals(data);
+            } else {
+              console.error("Failed to fetch terminals");
+              showNotification('error', 'Could not load terminal locations from server.');
+            }
+          } catch (error) {
+            console.error("Error fetching terminals:", error);
+            showNotification('error', 'Could not load terminal locations from server.');
+          }
+        };
+
+
+        // --- NEW: Fetch transfer point data ---
+        const fetchTransferPointData = async () => {
+          try {
+            const res = await fetch(`${API_URL}/transfer-points`);
+            if (res.ok) {
+              const data = await res.json();
+              setDbTransferPoints(data);
+            } else {
+              console.error("Failed to fetch transfer points");
+              showNotification('error', 'Could not load transfer points from server.');
+            }
+          } catch (error) {
+            console.error("Error fetching transfer points:", error);
+            showNotification('error', 'Could not load transfer points from server.');
+          }
+        };
+
+        // --- MODIFIED: This function now fetches ALL route paths ---
+        const fetchAllRoutePaths = async () => {
+            try {
+                // Use the new endpoint you created!
+                const res = await fetch(`${API_URL}/routes/all-paths`); 
+                if (res.ok) {
+                    const data = await res.json();
+                    setAllDbRoutes(data); // <-- Store all routes
+                } else {
+                    console.error("Failed to fetch all route paths");
+                    showNotification('error', 'Could not load official route paths from server.');
+                }
+            } catch (error) {
+                console.error("Error fetching all route paths:", error);
+                showNotification('error', 'Could not load official route paths from server.');
+            }
+        };
+
+
+        fetchFareData();
+        fetchTerminalData(); // <-- Call the terminal function
+        fetchTransferPointData(); // <-- Call the new transfer point function
+        // --- MODIFIED: Call the new function ---
+        fetchAllRoutePaths();
+    }, []); // Empty array ensures this runs only once on mount
+
     // Helper function to trigger the notification
     const showNotification = (type, message) => {
         setNotifType(type);
@@ -352,15 +481,11 @@ const FareCalculator = () => {
 
     // Add toggle handler
     const handleMobileToggle = () => {
-    // === 1. ADD THIS CONSOLE.LOG FOR DEBUGGING ===
-    console.log('Toggling panel. New state will be:', !isMobileCollapsed);
-    setIsMobileCollapsed(prevState => !prevState);
+        setIsMobileCollapsed(prevState => !prevState);
     };
 
-    // === 2. CREATE A NEW "EXPAND" HANDLER ===
     // This will be called whenever the user clicks an input.
     const handleInputFocus = () => {
-        console.log('Input focused, ensuring panel is expanded.');
         setIsMobileCollapsed(false); // false = expanded
     };
 
@@ -490,7 +615,7 @@ const FareCalculator = () => {
 
 
     const { isLoaded } = useJsApiLoader({
-        googleMapsApiKey: 'AIzaSyAZH_hOOhFn__misPTBpWebZ7R10PPOKEA',
+        googleMapsApiKey: 'YOUR_GOOGLE_MAPS_API_KEY', // Make sure this key is secured
         libraries
     });
 
@@ -520,16 +645,40 @@ const FareCalculator = () => {
         }
     }, [isLoaded]);
 
-    const isNearJeepneyRoute = (point) => {
-        const threshold = 0.003;
-        return jeepneyRoutePath.some(routePoint => {
-            const distance = Math.sqrt(
-                Math.pow(point.lat - routePoint.lat, 2) +
-                Math.pow(point.lng - routePoint.lng, 2)
-            );
-            return distance <= threshold;
-        });
+
+    // --- MODIFIED: This function now checks against ALL Jeepney routes ---
+    const isNearAnyJeepneyRoute = (point) => {
+        if (allDbRoutes.length === 0) {
+            return false; // If paths aren't loaded, nothing is "near".
+        }
+        
+        const threshold = 0.003; // ~300 meters
+
+        // Iterate over ALL fetched routes
+        for (const route of allDbRoutes) {
+            // Only check against JEEPNEY routes (type 1)
+            // We assume 1 is Jeepney, 2 is Tricycle
+            if (route.transport_type_id !== 1) { 
+                continue; // Skip tricycle routes
+            }
+
+            // Check if the point is near any point in this specific jeepney route's path
+            const isNearThisRoute = route.points.some(routePoint => {
+                const distance = Math.sqrt(
+                    Math.pow(point.lat - routePoint.lat, 2) +
+                    Math.pow(point.lng - routePoint.lng, 2)
+                );
+                return distance <= threshold;
+            });
+
+            if (isNearThisRoute) {
+                return true; // Found a match, no need to check other routes
+            }
+        }
+        
+        return false; // Checked all jeepney routes, no match found
     };
+
 
     const extractStepPathPoints = (route) => {
         const steps = route.legs[0].steps;
@@ -545,193 +694,326 @@ const FareCalculator = () => {
         return allPoints;
     };
 
+// --- *** MAJOR REFACTOR: processRoute *** ---
 const processRoute = useCallback(async (route, index) => {
-    const distanceText = route.legs[0].distance.text;
-    const distanceValue = parseFloat(distanceText.replace(/[^0-9.]/g, ''));
-    
-    if (distanceValue > 20) {
-        return {
-            fare: 'N/A',
-            distance: distanceValue.toFixed(2),
-            baseFare: 'N/A',
-            transportMode: 'LONG DISTANCE TRIP DETECTED! Route outside Santa Maria Bulacan is not covered by Budget Byahe.',
-            isJeepneyRoute: false,
-            discountApplied: false,
-            routeIndex: index
-        };
-    }
-
-    const routeSummary = route.summary || "the main public road";
-    const routePoints = extractStepPathPoints(route);
-    const destinationCoords = {
-        lat: route.legs[0].end_location.lat(),
-        lng: route.legs[0].end_location.lng(),
-    };
-    const originCoords = {
-        lat: route.legs[0].start_location.lat(),
-        lng: route.legs[0].start_location.lng(),
-    };
-
-    const passesJeepneyRoute = routePoints.some((point) => isNearJeepneyRoute(point));
-    
-    let baseFare, finalFare, transportModeText, transfers, walkabilityInfo, discountApplied = false;
-
-    if (!passesJeepneyRoute) {
-        // --- TRICYCLE ONLY LOGIC ---
-        baseFare = 40 + Math.max(0, (distanceValue - 1) * 8);
+        const distanceText = route.legs[0].distance.text;
+        const distanceValue = parseFloat(distanceText.replace(/[^0-9.]/g, ''));
         
-        finalFare = baseFare;
-        if (discountType !== 'none') {
-            finalFare = baseFare * 0.80; 
-            discountApplied = true;
-        }
-
-        const calculatedFare = finalFare.toFixed(2);
-        const baseFareFormatted = baseFare.toFixed(2);
-        
-        transportModeText = 'tricycle';
-        transfers = [`Take a tricycle directly from your origin to your destination. (Estimated Fare: ₱${calculatedFare})`];
-        walkabilityInfo = '';
-
-        try {
-            const aiSuggestion = await generateInstructionGroq({
-                transportMode: 'tricycle', 
-                originOnRoute: false,
-                destinationOnRoute: false,
+        if (distanceValue > 20) {
+            return {
+                fare: 'N/A',
                 distance: distanceValue.toFixed(2),
-                baseFare: baseFareFormatted,
-                fare: calculatedFare,
-                discountApplied,
-                transfers, 
-                walkability: walkabilityInfo, 
-                routeSummary: 'local streets', 
-                origin: origin, // ADDED
-                destination: destination, // ADDED
-            });
-
-            transportModeText = `⚠️ TRICYCLE RIDE REQUIRED! This trip does not pass through the main jeepney route and requires a full Tricycle Ride. The fare is an (estimate) based on distance and local rates (fares can be negotiated).<br/><br/>${aiSuggestion}`;
-        } catch (error) {
-            console.error('AI generation failed for tricycle route:', error);
-            transportModeText = `⚠️ TRICYCLE RIDE REQUIRED! This trip does not pass through the main jeepney route and requires a full Tricycle Ride.<br/><br/>Take a tricycle directly from ${origin} to ${destination}. The estimated fare is ₱${calculatedFare} (rates can be negotiated with the driver).`;
+                baseFare: 'N/A',
+                transportMode: 'LONG DISTANCE TRIP DETECTED! Route outside Santa Maria Bulacan is not covered by Budget Byahe.',
+                isJeepneyRoute: false,
+                discountApplied: false,
+                routeIndex: index
+            };
         }
-        
-        return {
-            fare: calculatedFare,
-            distance: distanceValue.toFixed(2),
-            baseFare: baseFareFormatted,
-            transportMode: transportModeText,
-            isJeepneyRoute: false,
-            discountApplied,
-            routeIndex: index
+
+        const routeSummary = route.summary || "the main public road";
+        const routePoints = extractStepPathPoints(route);
+        const destinationCoords = {
+            lat: route.legs[0].end_location.lat(),
+            lng: route.legs[0].end_location.lng(),
+        };
+        const originCoords = {
+            lat: route.legs[0].start_location.lat(),
+            lng: route.legs[0].start_location.lng(),
         };
 
-    } else {
-        // --- JEEPNEY ROUTE LOGIC ---
+        const passesJeepneyRoute = routePoints.some((point) => isNearAnyJeepneyRoute(point));
         
-        baseFare = Math.max(12, distanceValue * 2); 
-        
-        finalFare = baseFare;
-        if (discountType !== 'none') {
-            finalFare = baseFare * 0.80; 
-            discountApplied = true;
-        }
-        
-        const calculatedFare = finalFare.toFixed(2);
-        const baseFareFormatted = baseFare.toFixed(2);
+        let transportModeText, transfers, walkabilityInfo;
+        let totalBaseFare = 0;
+        let totalFinalFare = 0;
+        let anyDiscountApplied = false;
 
-        const originOnRoute = isNearJeepneyRoute(originCoords);
-        const destinationOnRoute = isNearJeepneyRoute(destinationCoords);
-
-        const entryPoint = routePoints.find((p) => isNearJeepneyRoute(p));
-        const exitPoint = [...routePoints].reverse().find((p) => isNearJeepneyRoute(p));
-
-        transfers = [];
-        walkabilityInfo = ''; 
-
-        const fareDisplay = distanceValue >= 20 ? 'Estimated Fare: N/A' : `Estimated Fare: ₱${calculatedFare}`;
-
-        if (entryPoint && !originOnRoute) {
-            const pickup = getNearestTransferPoint(entryPoint);
-            transfers.push(`Take a tricycle to the jeepney stop at ${pickup.name}`);
-        }
-
-        // NOTE: No asterisks here, AI must handle the bolding
-        const jeepneyStep = `Ride the Norzagaray-Santa Maria jeepney route along ${routeSummary} (${fareDisplay})`;
-        transfers.push(jeepneyStep);
-
-
-        if (exitPoint && !destinationOnRoute) {
-            const dropoff = getNearestTransferPoint(exitPoint);
+        // --- Check if the route *never* comes near the jeepney path ---
+        if (!passesJeepneyRoute) {
             
-            const lastStopCoords = { lat: dropoff.lat, lng: dropoff.lng };
+            // --- TRICYCLE ONLY LOGIC (Fixed Route or Special Trip) ---
+            transportModeText = 'tricycle';
+            walkabilityInfo = '';
+            let foundFixedFare = false;
             
-            const dLat = (destinationCoords.lat - lastStopCoords.lat) * (Math.PI / 180);
-            const dLon = (destinationCoords.lng - lastStopCoords.lng) * (Math.PI / 180);
-            const a = 
-                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos(lastStopCoords.lat * (Math.PI / 180)) * Math.cos(destinationCoords.lat * (Math.PI / 180)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            const straightLineDistanceKm = R * c; 
-            
-            const walkabilityThresholdKm = 0.5; // 500 meters
+            const proximityThreshold = 0.003; // 300m threshold
+            const zoneThreshold = 0.01; // ~1km zone for matching a fixed fare
 
-            if (straightLineDistanceKm <= walkabilityThresholdKm) {
-                const distanceMeters = Math.round(straightLineDistanceKm * 1000);
-                walkabilityInfo = `Your destination is only about ${distanceMeters} meters from ${dropoff.name}. You can comfortably walk the final leg of the trip.`;
-                transfers.push(`Get off at ${dropoff.name} and proceed on foot to your final destination.`);
-            } else {
-                walkabilityInfo = `Your destination is ${straightLineDistanceKm.toFixed(2)} km from ${dropoff.name}. A tricycle ride is highly recommended for this distance.`;
-                transfers.push(`Get off at ${dropoff.name} and take a tricycle to your destination.`);
+            const terminals = allTransferPoints.filter(p => p.type === 'terminal');
+            const nearestToda = getNearestPoint(originCoords, terminals);
+
+            if (nearestToda.point && nearestToda.distance < proximityThreshold) {
+                // Origin is near a TODA. Check its destinations.
+                const todaName = nearestToda.point.association_name; 
+                const destinationsForThisToda = tricycleFareTable.filter(d => d.place === todaName);
+
+                if (destinationsForThisToda.length > 0) {
+                    const nearestDestination = getNearestPoint(destinationCoords, destinationsForThisToda);
+                    
+                    // --- MODIFIED LOGIC ---
+                    // If the user's destination is within a 1km "zone" of the closest
+                    // recorded destination for this TODA, use that fixed fare.
+                    if (nearestDestination.point && nearestDestination.distance < zoneThreshold) { 
+                        // --- MATCH FOUND! (Fixed Route) ---
+                        foundFixedFare = true;
+                        totalBaseFare = parseFloat(nearestDestination.point.fare);
+                        
+                        totalFinalFare = totalBaseFare;
+                        if (discountType !== 'none') {
+                            totalFinalFare = totalBaseFare * 0.80; 
+                            anyDiscountApplied = true;
+                        }
+
+                        const calculatedFare = totalFinalFare.toFixed(2);
+                        const baseFareFormatted = totalBaseFare.toFixed(2);
+                        
+                        transfers = [
+                            `Go to ${nearestToda.point.name}.`,
+                            `Take a tricycle to ${nearestDestination.point.location}. (Fixed Fare: ₱${calculatedFare})`
+                        ];
+
+                        try {
+                            const aiSuggestion = await generateInstructionGroq({
+                                transportMode: 'tricycle', 
+                                distance: distanceValue.toFixed(2),
+                                baseFare: baseFareFormatted,
+                                fare: calculatedFare,
+                                discountApplied: anyDiscountApplied,
+                                transfers, 
+                                walkability: `This is a fixed route from ${todaName}.`, 
+                                routeSummary: 'local streets', 
+                                origin: origin,
+                                destination: destination,
+                            });
+                            transportModeText = `✅ TRICYCLE RIDE (Fixed Route). This trip matches a known route from the ${todaName} terminal.<br/><br/>${aiSuggestion}`;
+                        } catch (error) {
+                             transportModeText = `✅ TRICYCLE RIDE (Fixed Route)<br/><br/>1. Go to ${nearestToda.point.name}.<br/>2. Take a tricycle to ${nearestDestination.point.location}.<br/><br/><b>Fare: ₱${calculatedFare}</b>`;
+                        }
+
+                        return {
+                            fare: calculatedFare,
+                            distance: distanceValue.toFixed(2),
+                            baseFare: baseFareFormatted,
+                            transportMode: transportModeText,
+                            isJeepneyRoute: false,
+                            discountApplied: anyDiscountApplied,
+                            routeIndex: index
+                        };
+                    }
+                }
             }
-        } else if (originOnRoute && destinationOnRoute) {
-            transfers = [jeepneyStep];
-            walkabilityInfo = "Your entire trip is on the main jeepney route. No transfers needed.";
-        }
-        
-        setIsAiProcessing(true);
 
-        try {
-            const aiSuggestion = await generateInstructionGroq({
-                transportMode: 'jeepney', 
-                originOnRoute,
-                destinationOnRoute,
+            // --- FALLBACK TO SPECIAL TRIP (Tricycle Only) ---
+            if (!foundFixedFare) {
+                // Use the new helper function
+                const { baseFare, finalFare, discountApplied } = calculateTricycleSpecialTripFare(distanceValue, discountType);
+
+                totalBaseFare = baseFare;
+                totalFinalFare = finalFare;
+                anyDiscountApplied = discountApplied;
+
+                const calculatedFare = totalFinalFare.toFixed(2);
+                const baseFareFormatted = totalBaseFare.toFixed(2);
+                
+                transfers = [`Take a tricycle (Special Trip) directly from your origin to your destination. (Estimated Fare: ₱${calculatedFare})`];
+
+                try {
+                    const aiSuggestion = await generateInstructionGroq({
+                        transportMode: 'tricycle', 
+                        distance: distanceValue.toFixed(2),
+                        baseFare: baseFareFormatted,
+                        fare: calculatedFare,
+                        discountApplied: anyDiscountApplied,
+                        transfers, 
+                        walkability: walkabilityInfo, 
+                        routeSummary: 'local streets', 
+                        origin: origin,
+                        destination: destination,
+                    });
+
+                    transportModeText = `⚠️ TRICYCLE RIDE (Special Trip). This trip does not match a fixed route and requires a special ride. The fare is an (estimate) based on distance.<br/><br/>${aiSuggestion}`;
+                } catch (error) {
+                    console.error('AI generation failed for tricycle route:', error);
+                    transportModeText = `⚠️ TRICYCLE RIDE (Special Trip)<br/><br/>Take a tricycle directly from ${origin} to ${destination}. The estimated fare is ₱${calculatedFare} (rates can be negotiated).`;
+                }
+                
+                return {
+                    fare: calculatedFare,
+                    distance: distanceValue.toFixed(2),
+                    baseFare: baseFareFormatted,
+                    transportMode: transportModeText,
+                    isJeepneyRoute: false,
+                    discountApplied: anyDiscountApplied,
+                    routeIndex: index
+                };
+            }
+
+        } else {
+            // --- JEEPNEY + COMBINED ROUTE LOGIC ---
+            transfers = [];
+            walkabilityInfo = '';
+            
+            // --- 1. Calculate Jeepney Leg Fare ---
+            let jeepneyBaseFare = 0;
+            let jeepneyFinalFare = 0;
+            let jeepneyDiscountApplied = false;
+            let foundFare = false;
+            let fareRow = null;
+            
+            if (jeepneyFareTable.length > 0) {
+                const roundedDistance = Math.ceil(distanceValue); 
+                const matchingFares = jeepneyFareTable.filter(f => f.distance_km <= roundedDistance);
+                if (matchingFares.length > 0) {
+                    fareRow = matchingFares.reduce((prev, current) => 
+                        (prev.distance_km > current.distance_km) ? prev : current
+                    );
+                 }
+                if (fareRow) {
+                    jeepneyBaseFare = parseFloat(fareRow.regular_fare);
+                    jeepneyFinalFare = jeepneyBaseFare;
+                    if (discountType !== 'none') {
+                        jeepneyFinalFare = parseFloat(fareRow.discounted_fare);
+                        jeepneyDiscountApplied = true;
+                    }
+                    foundFare = true;
+                }
+            }
+            if (!foundFare) { // Fallback calculation
+                if (!isLoadingFares) console.warn(`No fare data for ${distanceValue}km. Using fallback.`);
+                jeepneyBaseFare = Math.max(12, distanceValue * 2); // Old formula
+                jeepneyFinalFare = jeepneyBaseFare;
+                if (discountType !== 'none') {
+                    jeepneyFinalFare = jeepneyBaseFare * 0.80; 
+                    jeepneyDiscountApplied = true;
+                }
+            }
+
+            totalBaseFare += jeepneyBaseFare;
+            totalFinalFare += jeepneyFinalFare;
+            if (jeepneyDiscountApplied) anyDiscountApplied = true;
+
+
+            // --- 2. Check for Tricycle Leg 1 (Origin to Jeep Stop) ---
+            const originOnRoute = isNearAnyJeepneyRoute(originCoords);
+            const entryPoint = routePoints.find((p) => isNearAnyJeepneyRoute(p));
+
+            if (entryPoint && !originOnRoute) {
+                const pickup = getNearestPoint(entryPoint, allTransferPoints).point;
+                // Use Haversine to get distance for this tricycle leg
+                const trikeDist1 = haversineDistance(originCoords, pickup);
+                
+                // Use helper to get fare
+                const { baseFare, finalFare } = calculateTricycleSpecialTripFare(trikeDist1, discountType);
+
+                totalBaseFare += baseFare;
+                totalFinalFare += finalFare;
+                
+                // Add transfer step with itemized fare
+                transfers.push(`Take a tricycle to the jeepney stop at ${pickup.name} (Est. Fare: ₱${finalFare.toFixed(2)})`);
+            }
+
+            // --- 3. Add Jeepney Leg ---
+            const jeepneyStep = `Ride a jeepney along ${routeSummary} (Fare: ₱${jeepneyFinalFare.toFixed(2)})`;
+            transfers.push(jeepneyStep);
+
+
+            // --- 4. Check for Tricycle Leg 2 (Jeep Stop to Destination) ---
+            const destinationOnRoute = isNearAnyJeepneyRoute(destinationCoords);
+
+            if (!destinationOnRoute) {
+                
+                // --- NEW LOGIC to find the BEST dropoff point ---
+                // 1. Filter all available transfer points to find only those on/near a jeepney route
+                const jeepneyTransferPoints = allTransferPoints.filter(p => isNearAnyJeepneyRoute(p));
+
+                let dropoff = null;
+
+                if (jeepneyTransferPoints.length > 0) {
+                    // 2. From that filtered list, find the one closest to the user's FINAL destination
+                    dropoff = getNearestPoint(destinationCoords, jeepneyTransferPoints).point;
+                } else {
+                    // FALLBACK: If no official transfer points are on the jeepney route (unlikely)
+                    // Revert to the old logic: find the Google "exit point" and get the nearest transfer point to THAT.
+                    const exitPoint = [...routePoints].reverse().find((p) => isNearAnyJeepneyRoute(p));
+                    if (exitPoint) {
+                        dropoff = getNearestPoint(exitPoint, allTransferPoints).point;
+                    }
+                }
+                
+                // If we found a dropoff point, calculate the final leg
+                if (dropoff) {
+                    // This calculates distance from the new, smarter 'dropoff' point
+                    const straightLineDistanceKm = haversineDistance(dropoff, destinationCoords);
+                    const walkabilityThresholdKm = 0.5; // 500 meters
+
+                    // Check if it's walkable (500m or less)
+                    if (straightLineDistanceKm <= walkabilityThresholdKm) {
+                        const distanceMeters = Math.round(straightLineDistanceKm * 1000);
+                        walkabilityInfo = `Your destination is only about ${distanceMeters} meters from ${dropoff.name}. You can comfortably walk the final leg of the trip.`;
+                        transfers.push(`Get off at ${dropoff.name} and proceed on foot to your final destination.`);
+                    } else {
+                        // Otherwise, suggest a tricycle ride
+                        walkabilityInfo = `Your destination is ${straightLineDistanceKm.toFixed(2)} km from ${dropoff.name}. A tricycle ride is highly recommended for this distance.`;
+                        const { baseFare, finalFare } = calculateTricycleSpecialTripFare(straightLineDistanceKm, discountType);
+                        totalBaseFare += baseFare;
+                        totalFinalFare += finalFare;
+                        transfers.push(`Get off at ${dropoff.name} and take a tricycle to your destination (Est. Fare: OS${finalFare.toFixed(2)})`);
+                    }
+                }
+                // --- END OF UPDATED LOGIC ---
+
+            } else if (originOnRoute && destinationOnRoute) {
+                walkabilityInfo = "Your entire trip is on the main jeepney route. No transfers needed.";
+            }
+            
+            // --- 5. Finalize and call AI ---
+            setIsAiProcessing(true);
+            const calculatedFare = totalFinalFare.toFixed(2);
+            const baseFareFormatted = totalBaseFare.toFixed(2);
+
+            try {
+                const aiSuggestion = await generateInstructionGroq({
+                    transportMode: 'jeepney', 
+                    originOnRoute,
+                    destinationOnRoute,
+                    distance: distanceValue.toFixed(2),
+                    baseFare: baseFareFormatted, // <-- Pass TOTAL base fare
+                    fare: calculatedFare,       // <-- Pass TOTAL final fare
+                    discountApplied: anyDiscountApplied,
+                    transfers, // <-- Now contains itemized fares
+                    walkability: walkabilityInfo,
+                    routeSummary: routeSummary,
+                    origin: origin,
+                    destination: destination,
+                });
+
+                transportModeText = aiSuggestion.replace(/\n/g, '<br/>');
+            } catch (error) {
+                console.error('AI generation failed for jeepney route:', error);
+                // Fallback text now shows the TOTAL fare
+                let fallbackText = '<b>Route Instructions:</b><br/><br/>';
+                transfers.forEach((step, idx) => {
+                    fallbackText += `${idx + 1}. ${step}<br/>`;
+                });
+                if (walkabilityInfo) {
+                    fallbackText += `<br/>${walkabilityInfo}`;
+                }
+                fallbackText += `<br/><br/><b>Total Estimated Fare:</b> ₱${calculatedFare} (Distance: ${distanceValue.toFixed(2)} km)`;
+                transportModeText = fallbackText;
+            }
+
+            return {
+                fare: calculatedFare, // <-- Return TOTAL final fare
                 distance: distanceValue.toFixed(2),
-                baseFare: baseFareFormatted,
-                fare: calculatedFare,
-                discountApplied,
-                transfers, 
-                walkability: walkabilityInfo,
-                routeSummary: routeSummary,
-                origin: origin, // ADDED
-                destination: destination, // ADDED
-            });
-
-            transportModeText = aiSuggestion.replace(/\n/g, '<br/>');
-        } catch (error) {
-            console.error('AI generation failed for jeepney route:', error);
-            // Fallback to basic route description
-            let fallbackText = '<b>Route Instructions:</b><br/><br/>';
-            transfers.forEach((step, idx) => {
-                fallbackText += `${idx + 1}. ${step}<br/>`;
-            });
-            if (walkabilityInfo) {
-                fallbackText += `<br/>${walkabilityInfo}`;
-            }
-            fallbackText += `<br/><br/><b>Fare:</b> ₱${calculatedFare} (Distance: ${distanceValue.toFixed(2)} km)`;
-            transportModeText = fallbackText;
+                baseFare: baseFareFormatted, // <-- Return TOTAL base fare
+                transportMode: transportModeText,
+                isJeepneyRoute: true,
+                discountApplied: anyDiscountApplied,
+                routeIndex: index
+            };
         }
-
-        return {
-            fare: calculatedFare,
-            distance: distanceValue.toFixed(2),
-            baseFare: baseFareFormatted,
-            transportMode: transportModeText,
-            isJeepneyRoute: true,
-            discountApplied,
-            routeIndex: index
-        };
-    }
-}, [discountType, origin, destination]); // Dependency array updated
+    }, [discountType, origin, destination, jeepneyFareTable, isLoadingFares, tricycleFareTable, setIsAiProcessing, allTransferPoints, allDbRoutes]);
 
     const clearInput = () => {
         if(originRef.current)
@@ -766,6 +1048,12 @@ const processRoute = useCallback(async (route, index) => {
 
         const originVal = originInput.value.trim();
         const destinationVal = destinationInput.value.trim();
+
+        // NEW: Check if fares are still loading
+        if (isLoadingFares) {
+            showNotification('info', 'Please wait, fare data is still loading...');
+            return;
+        }
 
         if (!originVal || !destinationVal) {
            showNotification('info', 'Please enter both origin and destination.');
@@ -844,13 +1132,12 @@ const processRoute = useCallback(async (route, index) => {
 
                     // Update DirectionsResult with all routes for rendering
                     setDirectionsResult(result);
-                    // Set the selected route to the most efficient (shortest) one initially
-                    setSelectedRouteIndex(shortestRoute.routeIndex);
-
-                    // Update the single display states for the selected route
-                    setDistanceKm(shortestRoute.distance);
-                    setFare(shortestRoute.fare);
-                    setTransportMode(shortestRoute.transportMode);
+                    
+                    // Default the map and text to the CHEAPEST route
+                    setSelectedRouteIndex(cheapestRoute.routeIndex);
+                    setDistanceKm(cheapestRoute.distance);
+                    setFare(cheapestRoute.fare);
+                    setTransportMode(cheapestRoute.transportMode);
                 } catch (error) {
                     setIsAiProcessing(false);
                     console.error('Error processing routes with AI:', error);
@@ -978,12 +1265,12 @@ const processRoute = useCallback(async (route, index) => {
         );
     };
 
-    // NEW FUNCTION: Filter points based on active filter state
+    // --- UPDATED: Function now uses allTransferPoints ---
     const getFilteredTransferPoints = useCallback(() => {
         if (activeFilter === 'all') {
-            return transferPoints;
+            return allTransferPoints;
         }
-        return transferPoints.filter(point => {
+        return allTransferPoints.filter(point => {
             if (activeFilter === 'terminal') {
                 return point.type === 'terminal';
             }
@@ -992,7 +1279,7 @@ const processRoute = useCallback(async (route, index) => {
             }
             return false;
         });
-    }, [activeFilter]);
+    }, [activeFilter, allTransferPoints]); // <-- UPDATED dependency array
 
 
     return isLoaded ? (
@@ -1186,15 +1473,16 @@ const processRoute = useCallback(async (route, index) => {
                         )}
                         
                     </div>
-                    <div className="route-legend">
+                    {/* --- MODIFIED: Updated Legend Text --- */}
+                    <div className="route-legend" id="final-step">
                         <h4>Map Legend</h4>
                         <div className="legend-item">
                             <span className="legend-color" style={{ backgroundColor: 'green' }}></span>
-                            <p>Suggested Trip Route (Jeepney/Tricycle)</p>
+                            <p>Suggested Trip Route</p>
                         </div>
                         <div className="legend-item">
                             <span className="legend-color" style={{ backgroundColor: '#FF5733' }}></span>
-                            <p>Official Jeepney Route (Norzagaray-Sta. Maria)</p>
+                            <p>Official Jeepney Routes</p>
                         </div>
                         <div className="legend-item">
                             <span className="legend-transfer-point"></span>
@@ -1245,31 +1533,47 @@ const processRoute = useCallback(async (route, index) => {
                     </>
                 )}
 
-                <Polyline
-                    path={jeepneyRoutePath}
-                    options={{
-                        strokeColor: '#FF5733',
-                        strokeOpacity: 1, 
-                        strokeWeight: 4,
-                        zIndex: 1
-                    }}
-                />
+                {/* --- MODIFIED: Render ALL routes, not just one --- */}
+                {allDbRoutes.map(route => {
+                    // Assign color based on transport type
+                    let color = '#808080'; // Default grey
+                    if (route.transport_type_id === 1) {
+                        color = '#FF5733'; // Jeepney color
+                    } else if (route.transport_type_id === 2) {
+                        color = '#00AEEF'; // Tricycle color
+                    }
+
+                    return (
+                        <Polyline
+                            key={route.id}
+                            path={route.points}
+                            options={{
+                                strokeColor: color,
+                                strokeOpacity: 0.8, // Make them slightly transparent
+                                strokeWeight: 4,
+                                zIndex: 1 // Keep them under the main green route
+                            }}
+                        />
+                    );
+                })}
 
                 {/* --- RENDER FILTERED MARKERS --- */}
+                {/* This will now automatically render both hard-coded points and DB terminals */}
                 {getFilteredTransferPoints().map((point, index) => (
                     <Marker
-                            key={index}
+                            key={`${point.type}-${point.id || index}`} // <-- Use point.id if available
                             position={{ lat: point.lat, lng: point.lng }}
                             title={point.name + (point.type === 'terminal' ? " (TODA Terminal)" : " (Transfer Point)")}
                             
-                            // 👇 This is the only part that changes
                             icon={getMarkerIcon(point, activeFilter)}
                             
-                            label={{
+                            // --- THIS IS THE CHANGE ---
+                            // NEW: Label for terminals AND points
+                            label={(point.type === 'terminal' || point.type === 'point') ? {
                                 text: point.name.charAt(0),
                                 color: 'white',
                                 fontWeight: 'bold'
-                            }}
+                            } : undefined}
                     />
                     ))}
             </GoogleMap>

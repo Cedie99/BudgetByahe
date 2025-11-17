@@ -13,8 +13,9 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->string('firebase_uid')->nullable()->unique();
+        Schema::create('reports', function (Blueprint $table) {
+            $table->id();
+            $table->timestamps();
         });
     }
 
@@ -24,12 +25,7 @@ return new class extends Migration
      * @return void
      */
     public function down()
-{
-    Schema::table('users', function (Blueprint $table) {
-        // Check if the column exists before dropping it
-        if (Schema::hasColumn('users', 'firebase_uid')) {
-            $table->dropColumn('firebase_uid');
-        }
-    });
-}
+    {
+        Schema::dropIfExists('reports');
+    }
 };

@@ -11,8 +11,16 @@ return new class extends Migration
      *
      * @return void
      */
+    
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
     public function up()
     {
+        // --- In DOWN, you re-create it ---
+        // (This code is copied from the UP method of your *original* file)
         Schema::create('fare_matrix', function (Blueprint $table) {
             $table->id();
             $table->foreignId('transport_type_id')->constrained('transport_types')->onDelete('cascade');
@@ -30,13 +38,10 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
     public function down()
     {
+        // --- In UP, you drop the table ---
         Schema::dropIfExists('fare_matrix');
     }
+
 };

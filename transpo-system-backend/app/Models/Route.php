@@ -11,11 +11,18 @@ class Route extends Model
 
     protected $fillable = [
         'route_name',
-        'start_terminal_id',
-        'end_terminal_id',
-        'total_distance_km',
+        // 'start_terminal_id', // You can remove this
+        // 'end_terminal_id',   // You can remove this
         'transport_type_id',
+        'total_distance_km',
         'status',
+
+        // --- ADD THESE LINES ---
+        'start_latitude',
+        'start_longitude',
+        'end_latitude',
+        'end_longitude',
+        // --- END OF ADDED LINES ---
     ];
 
     /**

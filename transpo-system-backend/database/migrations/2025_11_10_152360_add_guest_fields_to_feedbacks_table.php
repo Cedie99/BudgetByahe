@@ -12,15 +12,19 @@ return new class extends Migration
      *
      * @return void
      */
+    // AFTER
     public function up()
     {
-        // Make user_id nullable using raw SQL
-        DB::statement('ALTER TABLE feedbacks MODIFY user_id BIGINT UNSIGNED NULL');
-        
         Schema::table('feedbacks', function (Blueprint $table) {
-            // Add fields for guest feedback
-            $table->string('user_name', 100)->nullable()->after('user_id');
-            $table->string('user_email', 150)->nullable()->after('user_name');
+            // Check if the column DOESN'T exist before adding it
+            if (!Schema::hasColumn('feedbacks', 'user_name')) {
+                $table->string('user_name', 100)->nullable()->after('user_id');
+            }
+
+            // Check for the second column, too
+            if (!Schema::hasColumn('feedbacks', 'user_email')) {
+                $table->string('user_email', 150)->nullable()->after('user_name');
+            }
         });
     }
 

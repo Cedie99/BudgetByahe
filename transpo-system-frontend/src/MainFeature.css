@@ -1244,9 +1244,7 @@ html, body, #root {
 
 /* --- Desktop-ish Layout (min-width) --- */
 @media (min-width: 768px) {
-    .route-comparison-sections {
-        flex-direction: row; /* Display side-by-side */
-    }
+
     .comparison-divider {
         width: 1px;
         background-color: #e5e7eb;
@@ -1436,4 +1434,44 @@ html, body, #root {
         border-radius: 8px; 
         border: none;       
     }
+}
+
+/* ================================================= */
+/* IMPROVED ROUTE COMPARISON STYLES (Add to end of file) */
+/* ================================================= */
+
+/* 1. Make the "Cheapest" fare price blue */
+.cheapest-route .metric-fare {
+    color: #3b82f6;
+}
+
+/* 2. Make the "Cheapest" box hover-border blue */
+.cheapest-route .route-summary-box:hover {
+    border-color: #3b82f6;
+}
+
+/* 3. Make the "Cheapest" (Disabled/Viewing) button blue */
+.cheapest-route .select-route-btn:disabled {
+    background-color: #3b82f6;
+}
+
+/* 4. NEW: Add a strong "selected" style to the efficient box */
+.efficient-route .route-summary-box:has(.select-route-btn:disabled) {
+    border-color: #0d7a49;
+    box-shadow: 0 4px 12px rgba(13, 122, 73, 0.2);
+    transform: translateY(-1px);
+    background-color: #f6fef9;
+}
+
+/* 5. NEW: Add a strong "selected" style to the cheapest box */
+.cheapest-route .route-summary-box:has(.select-route-btn:disabled) {
+    border-color: #3b82f6;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+    background-color: #f0f9ff;
+}
+
+/* 6. NEW: Prevent hover effect on an already-selected box */
+.route-summary-box:has(.select-route-btn:disabled):hover {
+    transform: translateY(-1px);
+    cursor: default;
 }

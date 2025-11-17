@@ -1,288 +1,237 @@
-/* ---------- FARES CONTAINER ---------- */
+/* ---------- PAGE WRAPPER ---------- */
 .fares-container {
-    margin: 120px auto;
-    padding: 50px 40px;
-    max-width: 1400px;
-    background: linear-gradient(145deg, #ffffff, #f7fdf9);
-    border-radius: 16px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-    position: relative;
-    user-select: none;
-}
-
-.fare-matrix {
-    overflow-y: auto;
-    max-height: 650px;
-}
-
-/* IMPROVED SCROLLBARS
-   Added standard properties for Firefox
-   and made the WebKit one slightly wider.
-*/
-.fare-matrix {
-    /* For Firefox */
-    scrollbar-width: thin;
-    scrollbar-color: #0d7a49 #ddd;
-}
-.fare-matrix ::-webkit-scrollbar {
-    width: 5px; /* Made slightly wider */
-}
-.fare-matrix ::-webkit-scrollbar-thumb {
-    background-color: #0d7a49; /* Added thumb color */
-    border-radius: 8px;
-}
-.fare-matrix ::-webkit-scrollbar-track {
-    background: #ddd;
+  margin: 120px auto;
+  padding: 50px 40px;
+  max-width: 1400px;
+  background: linear-gradient(145deg, #ffffff, #f7fdf9);
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  position: relative;
+  user-select: none;
 }
 
 .fares-container h2 {
-    font-size: 2rem;
-    font-weight: 700;
-    color: #0d7a49; /* 👈 THEME: var(--secondary-color) */
-    text-align: left;
-    margin-bottom: 12px;
-    position: relative;
-    z-index: 2;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #0d7a49; /* 👈 THEME */
+  text-align: left;
+  margin-bottom: 12px;
+  position: relative;
+  z-index: 2;
 }
 
 .matrix-p {
-    text-align: left;
-    margin: 0 auto 40px auto;
-    color: #4b5563;
-    font-size: 1rem;
-    line-height: 1.7;
-    position: relative;
-    z-index: 2;
+  text-align: left;
+  margin: 0 auto 40px auto;
+  color: #4b5563;
+  font-size: 1rem;
+  line-height: 1.7;
+  position: relative;
+  z-index: 2;
 }
 
-/* ---------- TABS (Your unused class) ---------- */
-.fares-tabs {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin-bottom: 35px;
-    position: relative;
-    z-index: 2;
+/* ---------- SCROLLABLE AREA ---------- */
+.fare-matrix {
+  overflow-y: auto;
+  max-height: 650px;
+  /* For Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: #0d7a49 #ddd;
 }
-
-.tab-btn {
-    background: #f9fafb;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    padding: 12px 24px;
-    font-size: 1rem;
-    font-weight: 600;
-    color: #374151;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-    transition: all 0.25s ease;
+.fare-matrix::-webkit-scrollbar {
+  width: 5px;
 }
-
-.tab-btn i {
-    font-size: 1.2rem;
-    color: #0d7a49; /* 👈 THEME: var(--secondary-color) */
-    transition: transform 0.3s ease;
+.fare-matrix::-webkit-scrollbar-thumb {
+  background-color: #0d7a49;
+  border-radius: 8px;
 }
-
-.tab-btn:hover {
-    transform: translateY(-3px);
-    background: #ecfdf5;
-    border-color: #0d7a49; /* 👈 THEME: var(--secondary-color) */
-    color: #0d7a49; /* 👈 THEME: var(--secondary-color) */
-}
-
-.tab-btn:hover i {
-    transform: scale(1.2);
-}
-
-.tab-btn.active {
-    background: #0d7a49; /* 👈 THEME: var(--secondary-color) */
-    color: white;
-    border-color: #0d7a49; /* 👈 THEME: var(--secondary-color) */
-    box-shadow: 0 4px 10px rgba(13, 122, 73, 0.3); /* 👈 THEME: (secondary, 0.3) */
-}
-
-.tab-btn.active i {
-    color: #fff;
-}
-
-/* ---------- EFFECTIVE DATE ---------- */
-.effective-date {
-    text-align: right;
-    font-size: 0.9rem;
-    color: #50555e;
-    margin-bottom: 10px; /* This margin is good for stacking */
-    font-style: italic;
-    background: #f0fdf4;
-    padding: 8px 14px;
-    border-radius: 8px;
-    display: inline-block;
-    border-left: 4px solid #0d7a49; /* 👈 THEME: var(--secondary-color) */
-}
-
-/* ---------- TABLE ---------- */
-.fares-table-wrapper {
-    width: 100%;
-    overflow-x: auto; /* This is the key for table responsiveness */
-    border-radius: 8px;
-    background: #fff;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-    position: relative;
-    z-index: 2;
-}
-
-.fares-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.96rem;
-    min-width: 600px; /* Ensures table is wide enough to show scrolling */
-}
-
-.fares-table thead {
-    /* 👈 THEME: var(--secondary-color), var(--primary-color) */
-    background: linear-gradient(90deg, #0d7a49, #0b8f54);
-    color: #fff;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.table-title {
-    font-size: 1.3rem;
-    font-weight: 600;
-    color: #0d7a49; /* 👈 THEME: var(--secondary-color) */
-    text-align: left;
-    margin: 20px 0 10px;
-    padding-left: 4px;
-}
-
-.fares-table th {
-    padding: 16px 18px;
-    text-align: left;
-    font-weight: 600;
-    position: relative;
-    border-right: 1px solid #e5e7eb;
-    border-bottom: 1px solid #e5e7eb;
-}
-
-.fares-table td {
-    padding: 12px 16px;
-    color: #374151;
-    vertical-align: middle;
-    border-right: 1px solid #e5e7eb;
-    border-bottom: 1px solid #e5e7eb;
-    line-height: 1.5;
-}
-
-.fares-table tr:nth-child(even) td {
-    background-color: #f9fafb;
-}
-
-.fares-table tr:hover td {
-    background: #ecfdf5;
-    color: #0d7a49; /* 👈 THEME: var(--secondary-color) */
-}
-
-/* ---------- NO DATA ---------- */
-.no-data {
-    text-align: center;
-    margin: 50px auto;
-    padding: 25px 30px;
-    font-size: 1rem;
-    color: #6b7280;
-    background-color: #f9fafb;
-    border-radius: 8px;
-    border: 1px solid #e5e7eb;
-    width: fit-content;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.no-data::before {
-    content: "🚫";
-    font-size: 1.3rem;
+.fare-matrix::-webkit-scrollbar-track {
+  background: #ddd;
 }
 
 /* ---------- TABLE HEADER (Date + Select) ---------- */
 .table-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-    position: relative;
-    z-index: 2;
-    gap: 20px; /* Added gap for spacing */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  position: relative;
+  z-index: 2;
+  gap: 20px; /* Added gap for spacing */
+}
+
+.effective-date {
+  text-align: right;
+  font-size: 0.9rem;
+  color: #50555e;
+  margin-bottom: 10px; /* This margin is good for stacking */
+  font-style: italic;
+  background: #f0fdf4;
+  padding: 8px 14px;
+  border-radius: 8px;
+  display: inline-block;
+  border-left: 4px solid #0d7a49; /* 👈 THEME */
 }
 
 .fare-select {
-    padding: 12px;
-    border: 1px solid #ced4da;
-    border-radius: 10px;
-    font-size: 15px;
-    background-color: #f8f9fa;
-    color: #343a40;
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 10px center;
-    padding-right: 40px;
-    cursor: pointer;
+  padding: 12px;
+  border: 1px solid #ced4da;
+  border-radius: 10px;
+  font-size: 15px;
+  background-color: #f8f9fa;
+  color: #343a40;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 40px;
+  cursor: pointer;
+}
+
+.table-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #0d7a49; /* 👈 THEME */
+  text-align: left;
+  margin: 20px 0 10px;
+  padding-left: 4px;
+}
+
+/* ---------- FARE TABLE STYLES ---------- */
+/* (This is the merged and cleaned-up version) */
+
+.fare-table-wrapper {
+  border-radius: 8px; /* Rounded corners for the container */
+  overflow: hidden; /* This keeps the table corners rounded */
+  border: 1px solid #e2e8f0; /* Light border */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  overflow-x: auto; /* This is the key for table responsiveness */
+}
+
+.fare-table {
+  width: 100%;
+  border-collapse: collapse; /* Removes gaps between cells */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  min-width: 600px; /* Ensures table is wide enough to show scrolling */
+}
+
+/* This styles the header (thead) - the green bar */
+.fare-table-head {
+  background-color: #0d7a49; /* Your app's green color */
+  color: white;
+}
+
+.fare-table-head th {
+  padding: 12px 15px;
+  text-align: left;
+  font-size: 0.875rem; /* 14px */
+  text-transform: uppercase; /* Makes text "PLACE", "FARE" */
+  letter-spacing: 0.5px;
+}
+
+/* This styles the body (tbody) */
+.fare-table-body tr {
+  border-bottom: 1px solid #e2e8f0; /* Light line between rows */
+  transition: background-color 0.2s ease;
+}
+
+/* This creates the "zebra striping" effect */
+.fare-table-body tr:nth-of-type(even) {
+  background-color: #f9fafb; /* Very light gray for every other row */
+}
+
+/* This adds the hover effect from your old design */
+.fare-table-body tr:hover {
+  background-color: #ecfdf5;
+}
+
+.fare-table-body tr:last-of-type {
+  border-bottom: none; /* No line on the last row */
+}
+
+/* This styles all the data cells (td) */
+.fare-table-body td {
+  padding: 12px 15px;
+  text-align: left;
+  font-size: 0.9rem; /* 14.4px */
+  color: #333;
+  transition: color 0.2s ease;
+}
+
+.fare-table-body tr:hover td {
+  color: #0d7a49;
+}
+
+/* ---------- NO DATA ---------- */
+.no-data {
+  text-align: center;
+  margin: 50px auto;
+  padding: 25px 30px;
+  font-size: 1rem;
+  color: #6b7280;
+  background-color: #f9fafb;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  width: fit-content;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.no-data::before {
+  content: "🚫";
+  font-size: 1.3rem;
 }
 
 /* ==================================
-   MOBILE RESPONSIVE CHANGES
+   MOBILE RESPONSIVE CHANGES
 ==================================
 */
 @media (max-width: 768px) {
-    .fares-container {
-        /* Reduced margin and padding for mobile */
-        margin: 80px auto;
-        padding: 30px 20px;
-    }
+  .fares-container {
+    /* Reduced margin and padding for mobile */
+    margin: 80px 10px; /* Added side margin */
+    padding: 30px 20px;
+  }
 
-    /* This is the main fix:
-       Stack the header elements vertically
-    */
-    .table-header {
-        flex-direction: column;
-        align-items: flex-start; /* Aligns both to the left */
-        gap: 15px; /* Adds space between stacked items */
-    }
+  /* This is the main fix:
+     Stack the header elements vertically
+  */
+  .table-header {
+    flex-direction: column;
+    align-items: flex-start; /* Aligns both to the left */
+    gap: 15px; /* Adds space between stacked items */
+  }
 
-    .effective-date {
-        width: 100%; /* Make full-width */
-        text-align: left; /* Align text left */
-        margin-bottom: 0; /* Gap is handled by flex-gap */
-    }
+  .effective-date {
+    width: 100%; /* Make full-width */
+    text-align: left; /* Align text left */
+    margin-bottom: 0; /* Gap is handled by flex-gap */
+    box-sizing: border-box; /* Include padding in width */
+  }
 
-    .fare-select {
-        width: 100%; /* Make dropdown full-width */
-    }
+  .fare-select {
+    width: 100%; /* Make dropdown full-width */
+    box-sizing: border-box; /* Include padding in width */
+  }
 
-    .tab-btn {
-        font-size: 0.9rem;
-        padding: 10px 16px;
-    }
+  /* Reduce padding and font sizes on mobile */
+  .fare-table-head th,
+  .fare-table-body td {
+    padding: 10px 12px;
+    font-size: 0.88rem;
+  }
 
-    .fares-table th,
-    .fares-table td {
-        padding: 10px 12px;
-        font-size: 0.88rem;
-    }
+  .fares-container h2 {
+    font-size: 1.5rem;
+  }
 
-    .fares-container h2 {
-        font-size: 1.5rem;
-    }
+  .matrix-p {
+    font-size: 0.9rem; /* Slightly smaller description text */
+    margin-bottom: 25px; /* Less space */
+  }
 
-    .matrix-p {
-        font-size: 0.9rem; /* Slightly smaller description text */
-        margin-bottom: 25px; /* Less space */
-    }
-
-    .table-title {
-        font-size: 1.1rem; /* Smaller table title */
-    }
+  .table-title {
+    font-size: 1.1rem; /* Smaller table title */
+  }
 }
