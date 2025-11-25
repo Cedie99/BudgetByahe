@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import './App.css';
 import Navbar from './Navbar';
 import Home from './Home';
-import MainFeature from './MainFeature';
+import RoutesPage from './RoutesPage';
 import Fares from './Fares';
 import Login from './Login';
 import Signup from './Signup';
@@ -28,7 +28,7 @@ import AdminFeedback from './admin/AdminFeedback';
 function AppWithNavbar() {
   const location = useLocation();
   const hideNavbarPaths = ["/login", "/signup", "/reset-password", "/__/auth/action", "/admin/login", "/admin/dashboard", "/admin/routes", "/admin/cms", "/admin/feedback"];
-  const hideChatbotPaths = ["/login", "/signup", "/mainFeature", "/reset-password", "/__/auth/action", "/admin/login", "/admin/dashboard", "/admin/routes", "/admin/cms", "/admin/feedback"];
+  const hideChatbotPaths = ["/login", "/signup", "/routes", "/reset-password", "/__/auth/action", "/admin/login", "/admin/dashboard", "/admin/routes", "/admin/cms", "/admin/feedback"];
   const showNavbar = !hideNavbarPaths.includes(location.pathname);
   const showChatbot = !hideChatbotPaths.includes(location.pathname);
 
@@ -90,7 +90,7 @@ function AppWithNavbar() {
       <Routes>
         <Route path="/" element={<Home />} />  
         <Route path="/home" element={<Home />} />
-        <Route path="/mainFeature" element={<MainFeature />} /> 
+        <Route path="/routes" element={<RoutesPage />} /> 
         <Route path="/fareupload" element={<FareUpload />} />
         <Route path="/transferpointupload" element={<TransferPointUpload />} />
         <Route path="/routeBuilder" element={<RouteBuilder />} />

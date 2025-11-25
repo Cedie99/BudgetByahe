@@ -141,7 +141,7 @@ const Navbar = ({ whiteBackground }) => {
           </li>
           <li>
             <NavLink 
-              to="/mainFeature"
+              to="/routes"
               end
               className={({ isActive }) => (isActive ? "active-link" : "")}
               onClick={closeMenu}

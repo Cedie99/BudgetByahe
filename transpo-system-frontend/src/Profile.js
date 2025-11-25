@@ -166,8 +166,38 @@ function Profile() {
     setIsSaving(true);
 
     try {
-      // Update Firestore
-      const userDocRef = doc(db, 'users', userId);
+      // Get Firebase UID from localStorage or auth
+      const firebaseUid = auth.currentUser?.uid || userId;
+      
+      if (!firebaseUid) {
+        throw new Error('User ID not found. Please log in again.');
+      }
+
+      // API URL
+      const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+
+      // Update MySQL database via API
+      const response = await fetch(`${API_URL}/users/profile`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          firebase_uid: firebaseUid,
+          first_name: editedFirstName.trim(),
+          last_name: editedLastName.trim(),
+          profile_photo: editedProfilePicture || ''
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || 'Failed to update profile');
+      }
+
+      // Update Firestore (keep both in sync)
+      const userDocRef = doc(db, 'users', firebaseUid);
       await setDoc(userDocRef, {
         firstName: editedFirstName.trim(),
         lastName: editedLastName.trim(),
@@ -196,7 +226,7 @@ function Profile() {
     } catch (error) {
       console.error('Error updating profile:', error);
       setNotifType('error');
-      setNotifMessage('Failed to update profile. Please try again.');
+      setNotifMessage(error.message || 'Failed to update profile. Please try again.');
       setShowNotif(true);
     } finally {
       setIsSaving(false);

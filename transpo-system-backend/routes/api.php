@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\RouteController;
 use App\Http\Controllers\Api\TricycleFareController;
 use App\Http\Controllers\Api\FeedbackController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\DashboardController;
 
 
 /*
@@ -87,4 +88,7 @@ Route::get('/feedback/stats', [FeedbackController::class, 'stats']);
 // User sync routes
 Route::post('/users/sync', [UserController::class, 'syncFirebaseUser']);
 Route::get('/users/firebase/{firebaseUid}', [UserController::class, 'getUserByFirebaseUid']);
-Route::get('/feedback/stats', [FeedbackController::class, 'stats']);
+Route::put('/users/profile', [UserController::class, 'updateProfile']);
+
+// Dashboard statistics
+Route::get('/dashboard/stats', [DashboardController::class, 'stats']);

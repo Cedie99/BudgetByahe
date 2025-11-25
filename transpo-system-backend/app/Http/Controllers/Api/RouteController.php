@@ -18,7 +18,7 @@ class RouteController extends Controller
     public function index()
     {
         // This is for your admin panel (RouteBuilder.js)
-        $routes = Route::select('id', 'route_name', 'total_distance_km')->get();
+        $routes = Route::select('id', 'route_name', 'total_distance_km', 'transport_type_id', 'status')->get();
         return response()->json($routes);
     }
 

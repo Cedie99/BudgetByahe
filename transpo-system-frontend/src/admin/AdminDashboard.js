@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './AdminDashboard.css';
-import { auth, signOut, db, collection, getDocs, query, orderBy, limit } from '../firebase';
+import { auth, signOut } from '../firebase';
 import AdminSidebar from './AdminSidebar';
 
 function AdminDashboard() {
@@ -33,38 +33,57 @@ function AdminDashboard() {
 
   const loadDashboardData = async () => {
     try {
-      // Get total users count
-      const usersSnapshot = await getDocs(collection(db, 'users'));
-      const totalUsers = usersSnapshot.size;
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+      console.log('Loading dashboard data from:', apiUrl);
 
-      // Get total routes count
-      const routesSnapshot = await getDocs(collection(db, 'routes'));
-      const totalRoutes = routesSnapshot.size;
+      // Fetch all dashboard statistics from MySQL via single API endpoint
+      const response = await fetch(`${apiUrl}/dashboard/stats`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
 
-      // Get feedback data
-      const feedbackSnapshot = await getDocs(collection(db, 'feedback'));
-      const totalFeedback = feedbackSnapshot.size;
-      const pendingFeedback = feedbackSnapshot.docs.filter(
-        doc => doc.data().status === 'pending'
-      ).length;
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-      // Get recent activity (last 5 feedback items)
-      const recentQuery = query(
-        collection(db, 'feedback'),
-        orderBy('createdAt', 'desc'),
-        limit(5)
-      );
-      const recentSnapshot = await getDocs(recentQuery);
-      const recent = recentSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      const result = await response.json();
+      console.log('Dashboard stats response:', result);
 
-      setStats({ totalUsers, totalRoutes, totalFeedback, pendingFeedback });
-      setRecentActivity(recent);
+      if (result.success && result.data) {
+        const data = result.data;
+
+        // Set statistics
+        const newStats = {
+          totalUsers: data.users.total,
+          totalRoutes: data.routes.total,
+          totalFeedback: data.feedback.total,
+          pendingFeedback: data.feedback.pending
+        };
+
+        console.log('Setting stats:', newStats);
+        setStats(newStats);
+
+        // Set recent feedback
+        const recentFeedback = data.recent_feedback.map(item => ({
+          id: item.id,
+          subject: 'No subject',
+          message: item.message,
+          status: item.status,
+          createdAt: item.created_at
+        }));
+
+        console.log('Recent feedback:', recentFeedback);
+        setRecentActivity(recentFeedback);
+      } else {
+        throw new Error(result.message || 'Failed to load dashboard data');
+      }
+
       setIsLoading(false);
     } catch (error) {
       console.error('Error loading dashboard data:', error);
+      console.error('Error details:', error.message);
       setIsLoading(false);
     }
   };
@@ -85,7 +104,20 @@ function AdminDashboard() {
 
   const formatDate = (timestamp) => {
     if (!timestamp) return 'N/A';
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    
+    // Handle different timestamp formats
+    let date;
+    if (timestamp.toDate) {
+      // Firestore timestamp
+      date = timestamp.toDate();
+    } else if (typeof timestamp === 'string') {
+      // ISO string from MySQL
+      date = new Date(timestamp);
+    } else {
+      // Regular Date object
+      date = new Date(timestamp);
+    }
+    
     return date.toLocaleDateString('en-US', { 
       month: 'short', 
       day: 'numeric', 

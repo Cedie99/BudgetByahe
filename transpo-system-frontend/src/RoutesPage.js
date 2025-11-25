@@ -4,7 +4,7 @@ import { FaMapMarkerAlt, FaFlag, FaKeyboard, FaArrowRight, FaArrowLeft, FaGasPum
 import { IoCloseCircleOutline, IoLocationSharp } from "react-icons/io5"; 
 import { MdOutlineDirectionsBus } from "react-icons/md"; 
 import { RiEBike2Line } from "react-icons/ri";
-import './MainFeature.css';
+import './RoutesPage.css';
 import switchLogo from './assets/loop.png';
 import NotificationModal from './components/NotificationModal';
 
@@ -251,7 +251,7 @@ async function generateInstructionGroq(context) {
 
 const R = 6371; // Radius of Earth in kilometers (for Haversine formula)
 
-const API_URL = "http://127.0.0.1:8000/api";
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8000/api";
 
 const FareCalculator = () => {
     const [origin, setOrigin] = useState('');
