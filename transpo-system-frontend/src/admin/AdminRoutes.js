@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './AdminRoutes.css';
-import { auth, signOut, db, collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from '../firebase';
+import { auth, signOut } from '../firebase';
 import AdminSidebar from './AdminSidebar';
 import NotificationModal from '../components/NotificationModal';
+
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
 
 function AdminRoutes() {
   const navigate = useNavigate();
@@ -37,17 +39,35 @@ function AdminRoutes() {
 
   const loadRoutes = async () => {
     try {
-      const routesSnapshot = await getDocs(collection(db, 'routes'));
-      const routesData = routesSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
+      console.log('Fetching routes from:', `${API_URL}/routes`);
+      const response = await fetch(`${API_URL}/routes`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const routesData = await response.json();
+      console.log('Routes loaded:', routesData);
+      
+      // Transform MySQL data to match the expected format
+      const transformedRoutes = routesData.map(route => ({
+        id: route.id,
+        origin: route.route_name?.split(' to ')[0] || 'Unknown',
+        destination: route.route_name?.split(' to ')[1] || 'Unknown',
+        vehicleType: route.transport_type_id === 1 ? 'Jeepney' : 'Tricycle',
+        distance: parseFloat(route.total_distance_km) || 0,
+        baseFare: 13, // Default base fare - should come from fare_matrix
+        perKmRate: 2.2, // Default rate - should come from fare_matrix
+        estimatedFare: (13 + (2.2 * parseFloat(route.total_distance_km))).toFixed(2),
+        status: route.status || 'active'
       }));
-      setRoutes(routesData);
+      
+      setRoutes(transformedRoutes);
       setIsLoading(false);
     } catch (error) {
       console.error('Error loading routes:', error);
       setNotifType('error');
-      setNotifMessage('Failed to load routes');
+      setNotifMessage('Failed to load routes: ' + error.message);
       setShowNotif(true);
       setIsLoading(false);
     }
@@ -75,28 +95,40 @@ function AdminRoutes() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    // TODO: Implement API endpoint for adding/updating routes
+    setNotifType('info');
+    setNotifMessage('Route management features coming soon! Routes are currently managed through database seeders.');
+    setShowNotif(true);
+    setShowModal(false);
+    
+    /* 
     try {
       const routeData = {
-        ...formData,
-        baseFare: parseFloat(formData.baseFare),
-        perKmRate: parseFloat(formData.perKmRate),
-        distance: parseFloat(formData.distance),
-        estimatedFare: parseFloat(formData.estimatedFare),
-        updatedAt: new Date()
+        route_name: `${formData.origin} to ${formData.destination}`,
+        start_terminal_id: 1, // TODO: Get from terminals
+        end_terminal_id: 2,
+        total_distance_km: parseFloat(formData.distance),
+        transport_type_id: formData.vehicleType === 'Jeepney' ? 1 : 2,
+        status: formData.status
       };
 
-      if (editingRoute) {
-        await updateDoc(doc(db, 'routes', editingRoute.id), routeData);
-        setNotifMessage('Route updated successfully!');
-      } else {
-        await addDoc(collection(db, 'routes'), {
-          ...routeData,
-          createdAt: new Date()
-        });
-        setNotifMessage('Route added successfully!');
-      }
+      const method = editingRoute ? 'PUT' : 'POST';
+      const url = editingRoute 
+        ? `${API_URL}/routes/${editingRoute.id}`
+        : `${API_URL}/routes`;
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(routeData)
+      });
+
+      if (!response.ok) throw new Error('Failed to save route');
 
       setNotifType('success');
+      setNotifMessage(editingRoute ? 'Route updated successfully!' : 'Route added successfully!');
       setShowNotif(true);
       setShowModal(false);
       resetForm();
@@ -107,6 +139,7 @@ function AdminRoutes() {
       setNotifMessage('Failed to save route');
       setShowNotif(true);
     }
+    */
   };
 
   const handleEdit = (route) => {
@@ -127,8 +160,19 @@ function AdminRoutes() {
   const handleDelete = async (routeId) => {
     if (!window.confirm('Are you sure you want to delete this route?')) return;
 
+    // TODO: Implement API endpoint for deleting routes
+    setNotifType('info');
+    setNotifMessage('Delete functionality coming soon! Routes are currently managed through database.');
+    setShowNotif(true);
+    
+    /*
     try {
-      await deleteDoc(doc(db, 'routes', routeId));
+      const response = await fetch(`${API_URL}/routes/${routeId}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) throw new Error('Failed to delete route');
+
       setNotifType('success');
       setNotifMessage('Route deleted successfully!');
       setShowNotif(true);
@@ -139,6 +183,7 @@ function AdminRoutes() {
       setNotifMessage('Failed to delete route');
       setShowNotif(true);
     }
+    */
   };
 
   const resetForm = () => {
