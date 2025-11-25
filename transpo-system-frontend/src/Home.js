@@ -66,7 +66,7 @@ function Home() {
 
           <button
             className="find-route-button"
-            onClick={() => navigate("/mainFeature")}
+            onClick={() => navigate("/routes")}
           >
             Find My Route
           </button>

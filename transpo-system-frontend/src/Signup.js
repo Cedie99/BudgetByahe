@@ -41,7 +41,7 @@ function Signup() {
 
   if (lastPage === "/") backLabel = "Home";
   else if (lastPage.includes("home")) backLabel = "Home";
-  else if (lastPage.includes("mainFeature")) backLabel = "Routes";
+  else if (lastPage.includes("routes")) backLabel = "Routes";
   else if (lastPage.includes("fare")) backLabel = "Fares";
   else if (lastPage.includes("map")) backLabel = "Map";
 
