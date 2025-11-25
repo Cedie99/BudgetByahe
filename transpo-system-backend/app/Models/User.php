@@ -18,9 +18,13 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
+        'firebase_uid',
         'name',
         'email',
         'password',
+        'role',
+        'profile_photo',
+        'last_login_at',
     ];
 
     /**
@@ -40,5 +44,14 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'last_login_at' => 'datetime',
     ];
+
+    /**
+     * Get the feedbacks for the user.
+     */
+    public function feedbacks()
+    {
+        return $this->hasMany(Feedback::class);
+    }
 }

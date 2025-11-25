@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { FaBus, FaMapMarkedAlt, FaClock, FaRoute, FaBuilding, FaArrowRight} from "react-icons/fa";
 import './App.css';
 import MapPhilippines from './MapPhilippines.js';
+import FeedbackForm from './components/FeedbackForm';
 import peso from './assets/peso.png';
 import route from './assets/route.png';
 import devices from './assets/devices.png';
@@ -16,9 +17,14 @@ import Footer from './Footer.js'
 function Home() {
   const navigate = useNavigate();
   const featuresRef = useRef(null);
+  const aboutRef = useRef(null);
 
   const tutorialbtn = () => {
     featuresRef.current?.scrollIntoView({behavior: "smooth"});
+  }
+
+  const aboutbtn = () => {
+    aboutRef.current?.scrollIntoView({behavior: "smooth"});
   }
 
 
@@ -73,7 +79,7 @@ function Home() {
           </button>
         </div>
 
-        <div className="scroll-indicator-creative" onClick={tutorialbtn}>
+        <div className="scroll-indicator-creative" onClick={aboutbtn}>
             <img src={aboutImage} alt="Scroll Down" className="scroll-compass-img" /> 
             <span className="scroll-text">SCROLL DOWN TO VIEW MORE</span>
         </div>
@@ -102,7 +108,7 @@ function Home() {
 
 
        {/* ===== About Budget Byahe ===== */}
-      <section class="about-modern">
+      <section class="about-modern" id='abt-modern' ref={aboutRef }>
         <div class="about-container">
           <div class="about-text">
             <h2>About <span className="highlight">Budget Biyahe</span></h2>
@@ -115,11 +121,11 @@ function Home() {
 
               <div className="about-stats">
                 <div className="stat">
-                  <FaRoute className="stat-icon" />
+                  <FaRoute className="stats-icon" />
                   <span>120+ Routes Covered</span>
                 </div>
                 <div className="stat">
-                  <FaBuilding className="stat-icon" />
+                  <FaBuilding className="stats-icon" />
                   <span>50+ Partner LGUs</span>
                 </div>
               </div>
@@ -303,9 +309,8 @@ function Home() {
         </div>
     </section>
 
-
-
-     
+      {/* ===== Feedback Form Section ===== */}
+      <FeedbackForm />
 
       {/* ===== Footer ===== */}
       <Footer/>

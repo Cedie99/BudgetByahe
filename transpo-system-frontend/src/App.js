@@ -4,7 +4,6 @@ import './App.css';
 import Navbar from './Navbar';
 import Home from './Home';
 import MainFeature from './MainFeature';
-import FareUpload from './FareUpload';
 import Fares from './Fares';
 import Login from './Login';
 import Signup from './Signup';
@@ -13,6 +12,11 @@ import Map from './Map';
 import ResetPassword from './ResetPassword';
 import ChatbotWidget from './components/ChatbotWidget';
 import { auth, onAuthStateChanged, db, doc, getDoc } from './firebase';
+
+
+import FareUpload from './FareUpload';
+import TransferPointUpload from './TransferPointUpload';
+import RouteBuilder from './RouteBuilder';
 
 // Admin Components
 import AdminLogin from './admin/AdminLogin';
@@ -88,6 +92,8 @@ function AppWithNavbar() {
         <Route path="/home" element={<Home />} />
         <Route path="/mainFeature" element={<MainFeature />} /> 
         <Route path="/fareupload" element={<FareUpload />} />
+        <Route path="/transferpointupload" element={<TransferPointUpload />} />
+        <Route path="/routeBuilder" element={<RouteBuilder />} />
         <Route path="/fares" element={<Fares />} />
         <Route path="/map" element={<Map />} />
         <Route path="/login" element={<Login />} />

@@ -224,3 +224,59 @@
         opacity: 1;
     }
 }
+
+/* --- 📱 Mobile Responsiveness (600px breakpoint) --- */
+@media (max-width: 600px) {
+
+    /* 1. Repositions the main container (and toggle button)
+          to be closer to the screen edge */
+    .chatbot-widget {
+        bottom: 20px;
+        right: 20px;
+    }
+
+    /* 2. Makes the toggle button slightly smaller */
+    .chat-toggle {
+        width: 50px;
+        height: 50px;
+        font-size: 22px;
+    }
+
+    /* 3. This is the magic! When the .is-open class is added,
+          the *main container* expands to fill the entire screen. */
+    .chatbot-widget.is-open {
+        bottom: 0;
+        right: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 10000; /* Ensure it's above all other content */
+    }
+
+    /* 4. The chat window itself now just needs to fill
+          its 100% parent, with no rounded corners. */
+    .chat-window {
+        width: 100%;
+        height: 100%;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    /* 5. Widen the max-width of messages on small screens */
+    .chat-message-container {
+        max-width: 90%;
+    }
+
+    /* 6. --- Safe Area Padding (for iPhone notches/home bars) --- */
+
+    /* Adds padding to the header to avoid the top "notch" */
+    .chat-header {
+        /* 15px is your original padding + the safe area */
+        padding-top: calc(15px + env(safe-area-inset-top));
+    }
+
+    /* Adds padding to the input area to avoid the bottom "home bar" */
+    .chat-input {
+        /* 5px is your original padding + the safe area */
+        padding-bottom: calc(5px + env(safe-area-inset-bottom));
+    }
+}

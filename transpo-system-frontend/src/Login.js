@@ -4,6 +4,7 @@ import './Auth.css';
 import googleLogo from './assets/google_logo.png';
 import fbLogo from './assets/fb_logo_white.png';
 import bbLogo from './assets/bb-logo.png';
+import { syncUserToMySQL } from './utils/userSync';
 
 import {
   auth,
@@ -24,7 +25,9 @@ function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  
 
   // Notification modal state
   const [showNotif, setShowNotif] = useState(false);
@@ -48,6 +51,7 @@ function Login() {
   // --- Email & Password Login ---
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
     try {
       const userCred = await signInWithEmailAndPassword(auth, email, password);
       const user = userCred.user;
@@ -57,14 +61,23 @@ function Login() {
       const userDocRef = doc(db, "users", user.uid);
       const userDoc = await getDoc(userDocRef);
       
+      let userData = {};
       if (userDoc.exists()) {
-        const userData = userDoc.data();
+        userData = userDoc.data();
         localStorage.setItem('userFirstName', userData.firstName || '');
         localStorage.setItem('userLastName', userData.lastName || '');
         localStorage.setItem('userEmail', userData.email || user.email);
         localStorage.setItem('userId', user.uid);
         localStorage.setItem('userProfilePicture', userData.profilePicture || '');
       }
+
+      // Sync user to MySQL database (use photoURL, not base64 profilePicture)
+      await syncUserToMySQL(
+        user, 
+        userData.firstName || '', 
+        userData.lastName || '', 
+        user.photoURL || null
+      );
 
       localStorage.setItem('auth', 'true');
       localStorage.setItem('firebase_id_token', idToken);
@@ -92,6 +105,8 @@ function Login() {
       setNotifType('error');
       setNotifMessage(errorMsg);
       setShowNotif(true);
+    }finally {
+      setIsLoading(false); 
     }
   };
 
@@ -140,6 +155,9 @@ function Login() {
       localStorage.setItem('userEmail', user.email);
       localStorage.setItem('userId', user.uid);
       localStorage.setItem('userProfilePicture', userData.profilePicture || '');
+
+      // Sync user to MySQL database (use photoURL, not base64 profilePicture)
+      await syncUserToMySQL(user, firstName, lastName, user.photoURL || null);
 
       const idToken = await user.getIdToken();
       localStorage.setItem("auth", "true");
@@ -231,6 +249,9 @@ function Login() {
       localStorage.setItem('userEmail', user.email);
       localStorage.setItem('userId', user.uid);
       localStorage.setItem('userProfilePicture', userData.profilePicture || '');
+
+      // Sync user to MySQL database (use photoURL, not base64 profilePicture)
+      await syncUserToMySQL(user, firstName, lastName, user.photoURL || null);
 
       const idToken = await user.getIdToken();
       localStorage.setItem("auth", "true");
@@ -358,7 +379,19 @@ function Login() {
             </div>
 
             <div className="auth-actions auth-actions-centered">
-              <button className="btn-primary" type="submit">Log In</button>
+              <button
+                className="btn-primary"
+                type="submit"
+                // Disable if this form is loading OR if a social login is in progress
+                disabled={isLoading || googleLoading || facebookLoading}
+              >
+                {isLoading ? (
+                  // Reuse the same spinner as your social buttons
+                  <div className="auth-spinner"></div>
+                ) : (
+                  'Log In'
+                )}
+              </button>
             </div>
 
             <div style={{marginTop:12, textAlign:'center'}}>

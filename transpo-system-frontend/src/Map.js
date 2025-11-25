@@ -178,8 +178,8 @@ const Map = () => {
   return (
     <div className="map-page">
       <div className="map-header">
-        <h1 className="map-title">Byahe Explorer</h1>
-        <p className="map-subtitle">Click the location pin to explore the area</p>
+        <h1 className="map-title2">Byahe Explorer</h1>
+        <p className="map-subtitle2">Click the location pin to explore the area</p>
       </div>
       <div ref={mapContainer} className="map-container">
         {loading && (
