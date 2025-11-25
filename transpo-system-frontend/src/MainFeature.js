@@ -453,13 +453,15 @@ const FareCalculator = () => {
                 const res = await fetch(`${API_URL}/routes/all-paths`); 
                 if (res.ok) {
                     const data = await res.json();
-                    setAllDbRoutes(data); // <-- Store all routes
+                    setAllDbRoutes(Array.isArray(data) ? data : []); // <-- Store all routes, ensure it's an array
                 } else {
                     console.error("Failed to fetch all route paths");
+                    setAllDbRoutes([]); // Set to empty array on error
                     showNotification('error', 'Could not load official route paths from server.');
                 }
             } catch (error) {
-                console.error("Error fetching all route paths:", error);
+                console.error("Error fetching route paths:", error);
+                setAllDbRoutes([]); // Set to empty array on error
                 showNotification('error', 'Could not load official route paths from server.');
             }
         };
@@ -648,7 +650,7 @@ const FareCalculator = () => {
 
     // --- MODIFIED: This function now checks against ALL Jeepney routes ---
     const isNearAnyJeepneyRoute = (point) => {
-        if (allDbRoutes.length === 0) {
+        if (!Array.isArray(allDbRoutes) || allDbRoutes.length === 0) {
             return false; // If paths aren't loaded, nothing is "near".
         }
         
@@ -1534,7 +1536,7 @@ const processRoute = useCallback(async (route, index) => {
                 )}
 
                 {/* --- MODIFIED: Render ALL routes, not just one --- */}
-                {allDbRoutes.map(route => {
+                {Array.isArray(allDbRoutes) && allDbRoutes.map(route => {
                     // Assign color based on transport type
                     let color = '#808080'; // Default grey
                     if (route.transport_type_id === 1) {

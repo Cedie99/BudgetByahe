@@ -7,6 +7,8 @@ use App\Http\Controllers\Api\TerminalController;
 use App\Http\Controllers\Api\TransferPointController;
 use App\Http\Controllers\Api\RouteController;
 use App\Http\Controllers\Api\TricycleFareController;
+use App\Http\Controllers\Api\FeedbackController;
+use App\Http\Controllers\Api\UserController;
 
 
 /*
@@ -22,6 +24,16 @@ use App\Http\Controllers\Api\TricycleFareController;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
+});
+
+// Test endpoint to verify API is working
+Route::get('/test', function () {
+    return response()->json([
+        'success' => true,
+        'message' => 'API is working!',
+        'timestamp' => now()->toDateTimeString(),
+        'database' => DB::connection()->getDatabaseName()
+    ]);
 });
 
 Route::get('/fares/LTFRB', [FareController::class, 'getLtfrbFares']);
@@ -64,3 +76,15 @@ Route::post('/tricycle-fares', [TricycleFareController::class, 'store']);
 Route::delete('/tricycle-fares/{id}', [TricycleFareController::class, 'destroy']);
 
 Route::post('/jeepney-fares/bulk', [FareController::class, 'bulkStoreJeepneyFares']);
+
+// Feedback routes
+Route::get('/feedback', [FeedbackController::class, 'index']);
+Route::post('/feedback', [FeedbackController::class, 'store']);
+Route::put('/feedback/{id}', [FeedbackController::class, 'update']);
+Route::delete('/feedback/{id}', [FeedbackController::class, 'destroy']);
+Route::get('/feedback/stats', [FeedbackController::class, 'stats']);
+
+// User sync routes
+Route::post('/users/sync', [UserController::class, 'syncFirebaseUser']);
+Route::get('/users/firebase/{firebaseUid}', [UserController::class, 'getUserByFirebaseUid']);
+Route::get('/feedback/stats', [FeedbackController::class, 'stats']);

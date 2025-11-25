@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './AdminFeedback.css';
-import { auth, signOut, db, collection, getDocs, doc, updateDoc, deleteDoc } from '../firebase';
+import { auth, signOut } from '../firebase';
 import AdminSidebar from './AdminSidebar';
 import NotificationModal from '../components/NotificationModal';
 
@@ -27,37 +27,7 @@ function AdminFeedback() {
     loadFeedback();
   }, [navigate]);
 
-  useEffect(() => {
-    filterFeedbackData();
-  }, [feedback, filterStatus, searchTerm]);
-
-  const loadFeedback = async () => {
-    try {
-      const feedbackSnapshot = await getDocs(collection(db, 'feedback'));
-      const feedbackData = feedbackSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      
-      // Sort by timestamp (newest first)
-      feedbackData.sort((a, b) => {
-        const dateA = a.timestamp?.toDate() || new Date(0);
-        const dateB = b.timestamp?.toDate() || new Date(0);
-        return dateB - dateA;
-      });
-
-      setFeedback(feedbackData);
-      setIsLoading(false);
-    } catch (error) {
-      console.error('Error loading feedback:', error);
-      setNotifType('error');
-      setNotifMessage('Failed to load feedback');
-      setShowNotif(true);
-      setIsLoading(false);
-    }
-  };
-
-  const filterFeedbackData = () => {
+  const filterFeedbackData = React.useCallback(() => {
     let filtered = [...feedback];
 
     // Filter by status
@@ -77,24 +47,83 @@ function AdminFeedback() {
     }
 
     setFilteredFeedback(filtered);
+  }, [feedback, filterStatus, searchTerm]);
+
+  useEffect(() => {
+    filterFeedbackData();
+  }, [filterFeedbackData]);
+
+  const loadFeedback = async () => {
+    try {
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+      
+      const response = await fetch(`${apiUrl}/feedback`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        // Transform backend data to match frontend structure
+        const feedbackData = data.data.map(item => ({
+          id: item.id,
+          userName: item.user_name,
+          userEmail: item.user_email,
+          category: item.category,
+          message: item.message,
+          status: item.status,
+          timestamp: new Date(item.created_at),
+          userId: item.user_id,
+          firebaseUid: item.firebase_uid
+        }));
+        
+        // Sort by timestamp (newest first)
+        feedbackData.sort((a, b) => b.timestamp - a.timestamp);
+
+        setFeedback(feedbackData);
+      } else {
+        throw new Error(data.message || 'Failed to load feedback');
+      }
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Error loading feedback:', error);
+      setNotifType('error');
+      setNotifMessage('Failed to load feedback from database');
+      setShowNotif(true);
+      setIsLoading(false);
+    }
   };
 
   const handleStatusChange = async (feedbackId, newStatus) => {
     try {
-      await updateDoc(doc(db, 'feedback', feedbackId), {
-        status: newStatus,
-        updatedAt: new Date()
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+      
+      const response = await fetch(`${apiUrl}/feedback/${feedbackId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus })
       });
 
-      setFeedback(prev =>
-        prev.map(item =>
-          item.id === feedbackId ? { ...item, status: newStatus } : item
-        )
-      );
+      const data = await response.json();
 
-      setNotifType('success');
-      setNotifMessage(`Feedback marked as ${newStatus}`);
-      setShowNotif(true);
+      if (data.success) {
+        setFeedback(prev =>
+          prev.map(item =>
+            item.id === feedbackId ? { ...item, status: newStatus } : item
+          )
+        );
+
+        setNotifType('success');
+        setNotifMessage(`Feedback marked as ${newStatus}`);
+        setShowNotif(true);
+      } else {
+        throw new Error(data.message || 'Failed to update status');
+      }
     } catch (error) {
       console.error('Error updating feedback status:', error);
       setNotifType('error');
@@ -107,12 +136,26 @@ function AdminFeedback() {
     if (!window.confirm('Are you sure you want to delete this feedback?')) return;
 
     try {
-      await deleteDoc(doc(db, 'feedback', feedbackId));
-      setFeedback(prev => prev.filter(item => item.id !== feedbackId));
-      setShowDetailModal(false);
-      setNotifType('success');
-      setNotifMessage('Feedback deleted successfully!');
-      setShowNotif(true);
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+      
+      const response = await fetch(`${apiUrl}/feedback/${feedbackId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setFeedback(prev => prev.filter(item => item.id !== feedbackId));
+        setShowDetailModal(false);
+        setNotifType('success');
+        setNotifMessage('Feedback deleted successfully!');
+        setShowNotif(true);
+      } else {
+        throw new Error(data.message || 'Failed to delete feedback');
+      }
     } catch (error) {
       console.error('Error deleting feedback:', error);
       setNotifType('error');
@@ -128,7 +171,7 @@ function AdminFeedback() {
 
   const formatDate = (timestamp) => {
     if (!timestamp) return 'N/A';
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    const date = timestamp instanceof Date ? timestamp : new Date(timestamp);
     return date.toLocaleString('en-US', {
       month: 'short',
       day: 'numeric',

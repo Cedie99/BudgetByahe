@@ -111,7 +111,7 @@ class FeedbackController extends Controller
     /**
      * Update feedback status (admin only)
      */
-    public function updateStatus(Request $request, $id)
+    public function update(Request $request, $id)
     {
         try {
             $validator = Validator::make($request->all(), [

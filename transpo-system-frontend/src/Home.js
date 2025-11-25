@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { FaBus, FaMapMarkedAlt, FaClock, FaRoute, FaBuilding, FaArrowRight} from "react-icons/fa";
 import './App.css';
 import MapPhilippines from './MapPhilippines.js';
+import FeedbackForm from './components/FeedbackForm';
 import peso from './assets/peso.png';
 import route from './assets/route.png';
 import devices from './assets/devices.png';
@@ -308,9 +309,8 @@ function Home() {
         </div>
     </section>
 
-
-
-     
+      {/* ===== Feedback Form Section ===== */}
+      <FeedbackForm />
 
       {/* ===== Footer ===== */}
       <Footer/>

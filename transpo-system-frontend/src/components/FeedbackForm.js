@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { auth } from '../firebase';
 import './FeedbackForm.css';
 
 function FeedbackForm() {
+  const [currentUser, setCurrentUser] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -12,6 +13,34 @@ function FeedbackForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
   const [errors, setErrors] = useState({});
+
+  // Load user data when component mounts
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        setCurrentUser(user);
+        
+        // Get user info from localStorage (set during login)
+        const userFirstName = localStorage.getItem('userFirstName') || '';
+        const userLastName = localStorage.getItem('userLastName') || '';
+        const userEmail = localStorage.getItem('userEmail') || user.email || '';
+        
+        // Combine first and last name
+        const fullName = `${userFirstName} ${userLastName}`.trim() || user.displayName || '';
+        
+        // Pre-fill form with user data
+        setFormData(prev => ({
+          ...prev,
+          name: fullName,
+          email: userEmail
+        }));
+      } else {
+        setCurrentUser(null);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const categories = [
     { value: 'general', label: 'General Feedback' },
@@ -66,7 +95,6 @@ function FeedbackForm() {
     setSubmitStatus(null);
 
     try {
-      const currentUser = auth.currentUser;
       const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
       
       const payload = {
@@ -74,8 +102,16 @@ function FeedbackForm() {
         user_email: formData.email,
         category: formData.category,
         message: formData.message,
-        firebase_uid: currentUser?.uid || null
+        firebase_uid: currentUser?.uid || null,
       };
+
+      // Only include user_id if it exists and is valid
+      const userId = localStorage.getItem('userId');
+      if (userId && userId !== 'null' && userId !== 'undefined') {
+        payload.user_id = parseInt(userId);
+      }
+
+      console.log('Submitting feedback:', payload);
 
       const response = await fetch(`${apiUrl}/feedback`, {
         method: 'POST',
@@ -89,17 +125,30 @@ function FeedbackForm() {
 
       if (data.success) {
         setSubmitStatus({ type: 'success', message: data.message });
-        // Reset form
-        setFormData({
-          name: '',
-          email: '',
+        
+        // Reset only message and category, keep user info if logged in
+        setFormData(prev => ({
+          ...prev,
           category: 'general',
-          message: ''
-        });
+          message: '',
+          // Only clear name/email if user is not logged in
+          name: currentUser ? prev.name : '',
+          email: currentUser ? prev.email : ''
+        }));
+
+        // Auto-hide success message after 5 seconds
+        setTimeout(() => setSubmitStatus(null), 5000);
       } else {
+        // Show detailed validation errors if available
+        let errorMessage = data.message || 'Failed to submit feedback. Please try again.';
+        if (data.errors) {
+          const errorDetails = Object.values(data.errors).flat().join(', ');
+          errorMessage = `${errorMessage}: ${errorDetails}`;
+        }
+        console.error('Validation errors:', data.errors);
         setSubmitStatus({ 
           type: 'error', 
-          message: data.message || 'Failed to submit feedback. Please try again.' 
+          message: errorMessage
         });
       }
     } catch (error) {
@@ -179,7 +228,10 @@ function FeedbackForm() {
               )}
 
               <div className="form-group">
-                <label htmlFor="name">Your Name *</label>
+                <label htmlFor="name">
+                  Your Name *
+                  {currentUser && <span className="auto-filled-badge">✓ Auto-filled</span>}
+                </label>
                 <input
                   type="text"
                   id="name"
@@ -189,12 +241,17 @@ function FeedbackForm() {
                   placeholder="Enter your full name"
                   className={errors.name ? 'error' : ''}
                   disabled={isSubmitting}
+                  readOnly={currentUser}
+                  title={currentUser ? "Using your registered name" : ""}
                 />
                 {errors.name && <span className="error-message">{errors.name}</span>}
               </div>
 
               <div className="form-group">
-                <label htmlFor="email">Your Email *</label>
+                <label htmlFor="email">
+                  Your Email *
+                  {currentUser && <span className="auto-filled-badge">✓ Auto-filled</span>}
+                </label>
                 <input
                   type="email"
                   id="email"
@@ -204,6 +261,8 @@ function FeedbackForm() {
                   placeholder="your.email@example.com"
                   className={errors.email ? 'error' : ''}
                   disabled={isSubmitting}
+                  readOnly={currentUser}
+                  title={currentUser ? "Using your registered email" : ""}
                 />
                 {errors.email && <span className="error-message">{errors.email}</span>}
               </div>

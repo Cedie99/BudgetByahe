@@ -4,6 +4,7 @@ import './Auth.css';
 import googleLogo from './assets/google_logo.png';
 import fbLogo from './assets/fb_logo_white.png';
 import bbLogo from './assets/bb-logo.png';
+import { syncUserToMySQL } from './utils/userSync';
 
 import {
   auth,
@@ -60,14 +61,23 @@ function Login() {
       const userDocRef = doc(db, "users", user.uid);
       const userDoc = await getDoc(userDocRef);
       
+      let userData = {};
       if (userDoc.exists()) {
-        const userData = userDoc.data();
+        userData = userDoc.data();
         localStorage.setItem('userFirstName', userData.firstName || '');
         localStorage.setItem('userLastName', userData.lastName || '');
         localStorage.setItem('userEmail', userData.email || user.email);
         localStorage.setItem('userId', user.uid);
         localStorage.setItem('userProfilePicture', userData.profilePicture || '');
       }
+
+      // Sync user to MySQL database (use photoURL, not base64 profilePicture)
+      await syncUserToMySQL(
+        user, 
+        userData.firstName || '', 
+        userData.lastName || '', 
+        user.photoURL || null
+      );
 
       localStorage.setItem('auth', 'true');
       localStorage.setItem('firebase_id_token', idToken);
@@ -145,6 +155,9 @@ function Login() {
       localStorage.setItem('userEmail', user.email);
       localStorage.setItem('userId', user.uid);
       localStorage.setItem('userProfilePicture', userData.profilePicture || '');
+
+      // Sync user to MySQL database (use photoURL, not base64 profilePicture)
+      await syncUserToMySQL(user, firstName, lastName, user.photoURL || null);
 
       const idToken = await user.getIdToken();
       localStorage.setItem("auth", "true");
@@ -236,6 +249,9 @@ function Login() {
       localStorage.setItem('userEmail', user.email);
       localStorage.setItem('userId', user.uid);
       localStorage.setItem('userProfilePicture', userData.profilePicture || '');
+
+      // Sync user to MySQL database (use photoURL, not base64 profilePicture)
+      await syncUserToMySQL(user, firstName, lastName, user.photoURL || null);
 
       const idToken = await user.getIdToken();
       localStorage.setItem("auth", "true");
