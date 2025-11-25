@@ -88,6 +88,7 @@ Route::get('/feedback/stats', [FeedbackController::class, 'stats']);
 // User sync routes
 Route::post('/users/sync', [UserController::class, 'syncFirebaseUser']);
 Route::get('/users/firebase/{firebaseUid}', [UserController::class, 'getUserByFirebaseUid']);
+Route::put('/users/profile', [UserController::class, 'updateProfile']);
 
 // Dashboard statistics
 Route::get('/dashboard/stats', [DashboardController::class, 'stats']);

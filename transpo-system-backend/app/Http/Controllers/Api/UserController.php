@@ -129,4 +129,68 @@ class UserController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Update user profile
+     */
+    public function updateProfile(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'firebase_uid' => 'required|string',
+                'first_name' => 'required|string|max:255',
+                'last_name' => 'required|string|max:255',
+                'profile_photo' => 'nullable|string', // Base64 image
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
+
+            $data = $validator->validated();
+
+            // Find user by firebase_uid
+            $user = User::where('firebase_uid', $data['firebase_uid'])->first();
+
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not found',
+                ], 404);
+            }
+
+            // Update user profile
+            $user->update([
+                'name' => trim($data['first_name']) . ' ' . trim($data['last_name']),
+                'profile_photo' => $data['profile_photo'] ?? $user->profile_photo,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Profile updated successfully',
+                'data' => [
+                    'id' => $user->id,
+                    'firebase_uid' => $user->firebase_uid,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'profile_photo' => $user->profile_photo,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Profile update failed: ' . $e->getMessage(), [
+                'request_data' => $request->all(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update profile',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }
