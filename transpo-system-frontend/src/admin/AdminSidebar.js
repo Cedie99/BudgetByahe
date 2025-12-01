@@ -28,6 +28,16 @@ function AdminSidebar({ activePage, onLogout }) {
       path: '/admin/routes'
     },
     {
+      id: 'fares',
+      label: 'Fares & Terminals',
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0l.878-.659m-9.758-5.674a6 6 0 016-6 6 6 0 016 6m0 0a3 3 0 11-6 0 3 3 0 016 0Z" />
+        </svg>
+      ),
+      path: '/admin/fares'
+    },
+    {
       id: 'cms',
       label: 'Content Management',
       icon: (
