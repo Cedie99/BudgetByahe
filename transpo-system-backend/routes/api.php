@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\TricycleFareController;
 use App\Http\Controllers\Api\FeedbackController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\CmsController;
 
 
 /*
@@ -92,3 +93,16 @@ Route::put('/users/profile', [UserController::class, 'updateProfile']);
 
 // Dashboard statistics
 Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
+
+// CMS Settings routes
+Route::prefix('cms')->group(function () {
+    Route::get('/', [CmsController::class, 'index']);
+    Route::get('/settings', [CmsController::class, 'getSettings']);
+    Route::get('/group/{group}', [CmsController::class, 'getByGroup']);
+    Route::get('/{key}', [CmsController::class, 'show']);
+    Route::post('/settings', [CmsController::class, 'updateSettings']);
+    Route::put('/{key}', [CmsController::class, 'updateSetting']);
+    Route::delete('/{key}', [CmsController::class, 'destroy']);
+    Route::post('/{key}/restore', [CmsController::class, 'restore']);
+    Route::post('/reset-defaults', [CmsController::class, 'resetToDefaults']);
+});

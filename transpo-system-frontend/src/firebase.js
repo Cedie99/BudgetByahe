@@ -25,7 +25,8 @@ import {
   deleteDoc,
   query,
   orderBy,
-  limit
+  limit,
+  onSnapshot
 } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -72,4 +73,5 @@ export {
   query,
   orderBy,
   limit,
+  onSnapshot,
 };

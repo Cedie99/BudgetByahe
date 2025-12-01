@@ -1,30 +1,29 @@
 import { useState, useEffect } from 'react';
-import { db, doc, getDoc, onSnapshot } from '../firebase';
 
-// Custom hook to fetch and subscribe to CMS data
+// Custom hook to fetch CMS data from backend API
 export const useCMS = () => {
   const [cmsData, setCmsData] = useState({
-    // Default values (fallback)
-    navbarBrand: 'Budget Byahe',
+    // Default values (fallback) - matching production website
+    navbarBrand: 'Budget Biyahe',
     navbarLogo: '',
     
-    heroTitle: 'Plan Your Journey, Budget Your Ride',
-    heroSubtitle: 'Calculate transportation costs and discover the best routes across the Philippines',
-    heroButtonText: 'Get Started',
+    heroTitle: 'Smart Fare Calculation for Tricycles & Jeepneys',
+    heroSubtitle: 'Empowering commuters with accurate, fair, and easy-to-understand fare calculations for every ride.',
+    heroButtonText: 'Find My Route',
     
-    feature1Title: 'Smart Fare Calculator',
-    feature1Description: 'Instantly calculate transportation costs for jeepneys, tricycles, buses, and more',
-    feature2Title: 'Route Discovery',
-    feature2Description: 'Find the best routes and compare fares across different transportation modes',
-    feature3Title: 'Real-time Updates',
-    feature3Description: 'Stay informed with the latest fare rates and route information',
+    feature1Title: 'Seamless Fare Updates',
+    feature1Description: 'Stay informed with automatically updated fare rates for your routes and destinations.',
+    feature2Title: 'Smart Route Assistance',
+    feature2Description: 'Discover the best and most affordable route combinations with real-time mapping.',
+    feature3Title: '24/7 Fare Access',
+    feature3Description: 'Access fare information anytime, anywhere — whether online or on-the-go.',
     
-    aboutTitle: 'About Budget Byahe',
-    aboutDescription: 'Your trusted companion for budget-friendly transportation planning in the Philippines',
+    aboutTitle: 'About Budget Biyahe',
+    aboutDescription: 'Budget Biyahe is a Transparent Fare Calculation System for Tricycle and Jeepney Services, aims to revolutionize local public transportation by providing commuters and drivers with a fair, accurate, and easy-to-use fare calculation platform. By leveraging modern web technologies and real-time data, our system ensures transparency in fare computation, reduces disputes, and promotes trust between passengers and drivers.',
     
-    footerText: 'Making transportation planning easier for Filipinos',
+    footerText: 'Your smart travel companion for everyday commuting.',
     contactEmail: 'support@budgetbyahe.com',
-    contactPhone: '+63 123 456 7890',
+    contactPhone: '+63 900 123 4567',
     
     facebookUrl: '',
     twitterUrl: '',
@@ -38,42 +37,61 @@ export const useCMS = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    // Subscribe to real-time updates
-    const unsubscribe = onSnapshot(
-      doc(db, 'settings', 'cms'),
-      (docSnap) => {
-        if (docSnap.exists()) {
+  // Function to fetch from Laravel backend
+  const fetchFromBackend = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/api/cms/settings');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.data) {
+          // Convert the backend format to camelCase
+          const backendData = {};
+          for (const [key, value] of Object.entries(data.data)) {
+            // Convert snake_case to camelCase
+            const camelKey = key.replace(/_([a-z])/g, (match, letter) => letter.toUpperCase());
+            backendData[camelKey] = value;
+          }
+          
           setCmsData(prev => ({
             ...prev,
-            ...docSnap.data()
+            ...backendData
           }));
-          
-          // Apply theme colors to CSS variables
-          const data = docSnap.data();
-          if (data.primaryColor) {
-            document.documentElement.style.setProperty('--cms-primary-color', data.primaryColor);
+
+          // Apply theme colors
+          if (backendData.primaryColor) {
+            document.documentElement.style.setProperty('--cms-primary-color', backendData.primaryColor);
           }
-          if (data.secondaryColor) {
-            document.documentElement.style.setProperty('--cms-secondary-color', data.secondaryColor);
+          if (backendData.secondaryColor) {
+            document.documentElement.style.setProperty('--cms-secondary-color', backendData.secondaryColor);
           }
-          if (data.accentColor) {
-            document.documentElement.style.setProperty('--cms-accent-color', data.accentColor);
+          if (backendData.accentColor) {
+            document.documentElement.style.setProperty('--cms-accent-color', backendData.accentColor);
           }
         }
-        setLoading(false);
-      },
-      (err) => {
-        console.error('Error fetching CMS data:', err);
-        setError(err);
-        setLoading(false);
       }
-    );
+    } catch (error) {
+      console.error('Backend CMS fetch failed:', error);
+      setError(error);
+    }
+  };
 
-    return () => unsubscribe();
+  // Function to refresh CMS data (can be called after updates)
+  const refreshData = async () => {
+    await fetchFromBackend();
+  };
+
+  useEffect(() => {
+    // Load CMS data from backend on component mount
+    const loadData = async () => {
+      setLoading(true);
+      await fetchFromBackend();
+      setLoading(false);
+    };
+
+    loadData();
   }, []);
 
-  return { cmsData, loading, error };
+  return { cmsData, loading, error, refreshData };
 };
 
 export default useCMS;

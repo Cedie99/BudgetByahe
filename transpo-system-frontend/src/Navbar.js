@@ -3,6 +3,7 @@ import "./Navbar.css";
 import logo from "./assets/bb-logo.png";
 import { NavLink, useNavigate } from "react-router-dom";
 import { auth, signOut } from "./firebase";
+import useCMS from './hooks/useCMS';
 
 const Navbar = ({ whiteBackground }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -11,6 +12,7 @@ const Navbar = ({ whiteBackground }) => {
   const [userProfilePicture, setUserProfilePicture] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const navigate = useNavigate();
+  const { cmsData, loading, error } = useCMS();
 
   useEffect(() => {
     // Check if user is logged in on component mount
@@ -101,8 +103,12 @@ const Navbar = ({ whiteBackground }) => {
             }
           }}
         >
-          <img src={logo} alt="Budget Byahe" className="brand-logo" />
-          <a><h2 className="brand-name">Budget Byahe</h2></a>
+          <img 
+            src={cmsData.navbarLogo && cmsData.navbarLogo.trim() !== '' ? cmsData.navbarLogo : logo} 
+            alt={cmsData.navbarBrand || "Budget Byahe"} 
+            className="brand-logo" 
+          />
+          <a><h2 className="brand-name">{cmsData.navbarBrand || 'Budget Byahe'}</h2></a>
         </div>
 
 
