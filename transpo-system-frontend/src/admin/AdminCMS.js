@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './AdminCMS.css';
-import { auth, signOut, db, collection, doc, getDoc, setDoc } from '../firebase';
+import { auth, signOut } from '../firebase';
 import AdminSidebar from './AdminSidebar';
 import NotificationModal from '../components/NotificationModal';
 
@@ -15,30 +15,30 @@ function AdminCMS() {
 
   const [cmsData, setCmsData] = useState({
     // Navbar
-    navbarBrand: 'Budget Byahe',
+    navbarBrand: 'Budget Biyahe',
     navbarLogo: '',
     
     // Hero Section
-    heroTitle: 'Plan Your Journey, Budget Your Ride',
-    heroSubtitle: 'Calculate transportation costs and discover the best routes across the Philippines',
-    heroButtonText: 'Get Started',
+    heroTitle: 'Smart Fare Calculation for Tricycles & Jeepneys',
+    heroSubtitle: 'Empowering commuters with accurate, fair, and easy-to-understand fare calculations for every ride.',
+    heroButtonText: 'Find My Route',
     
     // Features
-    feature1Title: 'Smart Fare Calculator',
-    feature1Description: 'Instantly calculate transportation costs for jeepneys, tricycles, buses, and more',
-    feature2Title: 'Route Discovery',
-    feature2Description: 'Find the best routes and compare fares across different transportation modes',
-    feature3Title: 'Real-time Updates',
-    feature3Description: 'Stay informed with the latest fare rates and route information',
+    feature1Title: 'Seamless Fare Updates',
+    feature1Description: 'Stay informed with automatically updated fare rates for your routes and destinations.',
+    feature2Title: 'Smart Route Assistance',
+    feature2Description: 'Discover the best and most affordable route combinations with real-time mapping.',
+    feature3Title: '24/7 Fare Access',
+    feature3Description: 'Access fare information anytime, anywhere — whether online or on-the-go.',
     
     // About
-    aboutTitle: 'About Budget Byahe',
-    aboutDescription: 'Your trusted companion for budget-friendly transportation planning in the Philippines',
+    aboutTitle: 'About Budget Biyahe',
+    aboutDescription: 'Budget Biyahe is a Transparent Fare Calculation System for Tricycle and Jeepney Services, aims to revolutionize local public transportation by providing commuters and drivers with a fair, accurate, and easy-to-use fare calculation platform. By leveraging modern web technologies and real-time data, our system ensures transparency in fare computation, reduces disputes, and promotes trust between passengers and drivers.',
     
     // Footer
-    footerText: 'Making transportation planning easier for Filipinos',
+    footerText: 'Your smart travel companion for everyday commuting.',
     contactEmail: 'support@budgetbyahe.com',
-    contactPhone: '+63 123 456 7890',
+    contactPhone: '+63 900 123 4567',
     
     // Social Media
     facebookUrl: '',
@@ -61,17 +61,31 @@ function AdminCMS() {
   }, [navigate]);
 
   const loadCMSData = async () => {
+    setIsLoading(true);
     try {
-      const cmsDoc = await getDoc(doc(db, 'settings', 'cms'));
-      if (cmsDoc.exists()) {
-        setCmsData(prev => ({
-          ...prev,
-          ...cmsDoc.data()
-        }));
+      // Load from backend API
+      const response = await fetch('http://localhost:8000/api/cms/settings');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.data) {
+          // Convert snake_case to camelCase
+          const backendData = {};
+          for (const [key, value] of Object.entries(data.data)) {
+            const camelKey = key.replace(/_([a-z])/g, (match, letter) => letter.toUpperCase());
+            backendData[camelKey] = value;
+          }
+          
+          setCmsData(prev => ({
+            ...prev,
+            ...backendData
+          }));
+        }
+      } else {
+        console.error('Failed to load CMS data:', response.statusText);
       }
-      setIsLoading(false);
     } catch (error) {
       console.error('Error loading CMS data:', error);
+    } finally {
       setIsLoading(false);
     }
   };
@@ -103,18 +117,68 @@ function AdminCMS() {
     setIsSaving(true);
 
     try {
-      await setDoc(doc(db, 'settings', 'cms'), {
-        ...cmsData,
-        updatedAt: new Date()
+      // Prepare settings for backend API
+      const settingsArray = Object.entries(cmsData).map(([key, value]) => {
+        // Convert camelCase to snake_case for backend
+        const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+        
+        // Determine type and group
+        let type = 'text';
+        let group = 'general';
+        
+        if (key.includes('Color')) type = 'color';
+        else if (key.includes('Logo')) type = 'image';
+        else if (key.includes('Description') || key.includes('Subtitle')) type = 'textarea';
+        else if (key.includes('Url')) type = 'url';
+        else if (key.includes('Email')) type = 'email';
+        else if (key.includes('Phone')) type = 'phone';
+        
+        if (key.startsWith('navbar')) group = 'navbar';
+        else if (key.startsWith('hero')) group = 'hero';
+        else if (key.startsWith('feature')) group = 'features';
+        else if (key.startsWith('about')) group = 'about';
+        else if (key.startsWith('footer') || key.startsWith('contact')) group = 'footer';
+        else if (key.includes('Color')) group = 'colors';
+        else if (key.includes('Url')) group = 'social';
+
+        return {
+          key: snakeKey,
+          value: value || '',
+          type,
+          group
+        };
       });
 
-      setNotifType('success');
-      setNotifMessage('Content updated successfully!');
-      setShowNotif(true);
+      console.log('Attempting to save to backend...', settingsArray);
+      const backendResponse = await fetch('http://localhost:8000/api/cms/settings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          settings: settingsArray
+        })
+      });
+
+      console.log('Backend response status:', backendResponse.status);
+      const responseData = await backendResponse.json();
+      console.log('Backend response data:', responseData);
+
+      if (backendResponse.ok && responseData.success) {
+        // Reload the data to reflect changes
+        await loadCMSData();
+        
+        setNotifType('success');
+        setNotifMessage('Content updated successfully!');
+        setShowNotif(true);
+      } else {
+        throw new Error(responseData.message || `Backend save failed: ${backendResponse.status}`);
+      }
     } catch (error) {
       console.error('Error saving CMS data:', error);
       setNotifType('error');
-      setNotifMessage('Failed to update content');
+      setNotifMessage('Failed to update content: ' + error.message);
       setShowNotif(true);
     } finally {
       setIsSaving(false);

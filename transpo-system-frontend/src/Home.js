@@ -12,12 +12,14 @@ import ig from './assets/insta.png';
 import gmail from './assets/gmail.png';
 import aboutImage from './assets/brandlogo.png'
 import Footer from './Footer.js'
+import useCMS from './hooks/useCMS';
 
 
 function Home() {
   const navigate = useNavigate();
   const featuresRef = useRef(null);
   const aboutRef = useRef(null);
+  const { cmsData, loading, error } = useCMS();
 
   const tutorialbtn = () => {
     featuresRef.current?.scrollIntoView({behavior: "smooth"});
@@ -42,11 +44,10 @@ function Home() {
       <section className="landing-section" id='landing'>
         <div className="landing-centered">
           <h1 className="landing-title">
-            <span>Transparent Fare:</span> Smart Fare Calculation for Tricycles & Jeepneys 
+            <span>Transparent Fare:</span> {cmsData.heroTitle || 'Smart Fare Calculation for Tricycles & Jeepneys'}
           </h1>
           <p className="landing-subtext">
-            Empowering commuters with accurate, fair, and easy-to-understand 
-            fare calculations for every ride.
+            {cmsData.heroSubtitle || 'Empowering commuters with accurate, fair, and easy-to-understand fare calculations for every ride.'}
           </p>
 
           <div className="landing-highlights">
@@ -68,7 +69,7 @@ function Home() {
             className="find-route-button"
             onClick={() => navigate("/routes")}
           >
-            Find My Route
+            {cmsData.heroButtonText || 'Find My Route'}
           </button>
           <button
             className="how-button"
@@ -111,12 +112,9 @@ function Home() {
       <section class="about-modern" id='abt-modern' ref={aboutRef }>
         <div class="about-container">
           <div class="about-text">
-            <h2>About <span className="highlight">Budget Biyahe</span></h2>
+            <h2>{cmsData.aboutTitle || 'About'} <span className="highlight">Budget Biyahe</span></h2>
             <p>
-              Budget Biyahe is a Transparent Fare Calculation System for Tricycle and Jeepney Services, aims to revolutionize 
-              local public transportation by providing commuters and drivers with a fair, accurate, and easy-to-use fare 
-              calculation platform. By leveraging modern web technologies and real-time data, our system ensures transparency 
-              in fare computation, reduces disputes, and promotes trust between passengers and drivers.
+              {cmsData.aboutDescription || 'Budget Biyahe is a Transparent Fare Calculation System for Tricycle and Jeepney Services, aims to revolutionize local public transportation by providing commuters and drivers with a fair, accurate, and easy-to-use fare calculation platform. By leveraging modern web technologies and real-time data, our system ensures transparency in fare computation, reduces disputes, and promotes trust between passengers and drivers.'}
             </p>
 
               <div className="about-stats">
@@ -224,10 +222,9 @@ function Home() {
                 <FaBus />
               </div>
               <div>
-                <h3>Seamless Fare Updates</h3>
+                <h3>{cmsData.feature1Title || 'Seamless Fare Updates'}</h3>
                 <p>
-                  Stay informed with automatically updated fare rates for your
-                  routes and destinations.
+                  {cmsData.feature1Description || 'Stay informed with automatically updated fare rates for your routes and destinations.'}
                 </p>
               </div>
             </div>
@@ -237,10 +234,9 @@ function Home() {
                 <FaMapMarkedAlt />
               </div>
               <div>
-                <h3>Smart Route Assistance</h3>
+                <h3>{cmsData.feature2Title || 'Smart Route Assistance'}</h3>
                 <p>
-                  Discover the best and most affordable route combinations with
-                  real-time mapping.
+                  {cmsData.feature2Description || 'Discover the best and most affordable route combinations with real-time mapping.'}
                 </p>
               </div>
             </div>
@@ -250,10 +246,9 @@ function Home() {
                 <FaClock />
               </div>
               <div>
-                <h3>24/7 Fare Access</h3>
+                <h3>{cmsData.feature3Title || '24/7 Fare Access'}</h3>
                 <p>
-                  Access fare information anytime, anywhere — whether online or
-                  on-the-go.
+                  {cmsData.feature3Description || 'Access fare information anytime, anywhere — whether online or on-the-go.'}
                 </p>
               </div>
             </div>
