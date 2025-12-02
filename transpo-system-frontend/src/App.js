@@ -17,8 +17,6 @@ import ProtectedRoute from './components/ProtectedRoute';
 import { auth, onAuthStateChanged, db, doc, getDoc } from './firebase';
 
 
-import FareUpload from './FareUpload';
-import TransferPointUpload from './TransferPointUpload';
 import RouteBuilder from './RouteBuilder';
 
 // Admin Components
@@ -27,11 +25,12 @@ import AdminDashboard from './admin/AdminDashboard';
 import AdminRoutes from './admin/AdminRoutes';
 import AdminCMS from './admin/AdminCMS';
 import AdminFeedback from './admin/AdminFeedback';
+import AdminFareUpload from './admin/AdminFareUpload';
 
 function AppWithNavbar() {
   const location = useLocation();
-  const hideNavbarPaths = ["/login", "/signup", "/reset-password", "/forgot-password", "/verify-email", "/__/auth/action", "/admin/login", "/admin/dashboard", "/admin/routes", "/admin/cms", "/admin/feedback"];
-  const hideChatbotPaths = ["/login", "/signup", "/routes", "/reset-password", "/forgot-password", "/verify-email", "/__/auth/action", "/admin/login", "/admin/dashboard", "/admin/routes", "/admin/cms", "/admin/feedback"];
+  const hideNavbarPaths = ["/login", "/signup", "/reset-password", "/forgot-password", "/verify-email", "/__/auth/action", "/admin/login", "/admin/dashboard", "/admin/routes", "/admin/cms", "/admin/feedback", "/admin/fares"];
+  const hideChatbotPaths = ["/login", "/signup", "/routes", "/reset-password", "/forgot-password", "/verify-email", "/__/auth/action", "/admin/login", "/admin/dashboard", "/admin/routes", "/admin/cms", "/admin/feedback", "/admin/fares"];
   const showNavbar = !hideNavbarPaths.includes(location.pathname);
   const showChatbot = !hideChatbotPaths.includes(location.pathname);
 
@@ -98,8 +97,6 @@ function AppWithNavbar() {
             <RoutesPage />
           </ProtectedRoute>
         } /> 
-        <Route path="/fareupload" element={<FareUpload />} />
-        <Route path="/transferpointupload" element={<TransferPointUpload />} />
         <Route path="/routeBuilder" element={<RouteBuilder />} />
         <Route path="/fares" element={<Fares />} />
         <Route path="/map" element={<Map />} />
@@ -117,6 +114,8 @@ function AppWithNavbar() {
         <Route path="/admin/routes" element={<AdminRoutes />} />
         <Route path="/admin/cms" element={<AdminCMS />} />
         <Route path="/admin/feedback" element={<AdminFeedback />} />
+        <Route path="/admin/feedback" element={<AdminFeedback />} />
+        <Route path="/admin/fares" element={<AdminFareUpload />} />
       </Routes>
       {showChatbot && <ChatbotWidget />}
     </>
