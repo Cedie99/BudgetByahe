@@ -176,6 +176,13 @@ function Profile() {
       // API URL
       const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
 
+      console.log('Updating profile with data:', {
+        firebase_uid: firebaseUid,
+        first_name: editedFirstName.trim(),
+        last_name: editedLastName.trim(),
+        has_profile_photo: !!editedProfilePicture
+      });
+
       // Update MySQL database via API
       const response = await fetch(`${API_URL}/users/profile`, {
         method: 'PUT',
@@ -186,14 +193,16 @@ function Profile() {
           firebase_uid: firebaseUid,
           first_name: editedFirstName.trim(),
           last_name: editedLastName.trim(),
-          profile_photo: editedProfilePicture || ''
+          profile_photo: editedProfilePicture || null
         })
       });
 
       const data = await response.json();
+      
+      console.log('API Response:', data);
 
       if (!response.ok || !data.success) {
-        throw new Error(data.message || 'Failed to update profile');
+        throw new Error(data.message || data.error || 'Failed to update profile');
       }
 
       // Update Firestore (keep both in sync)

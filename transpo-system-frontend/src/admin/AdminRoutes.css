@@ -31,7 +31,7 @@
 }
 
 .route-type-badge {
-  background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+  background: linear-gradient(135deg, #0a5c36 0%, #0d7a49 100%);
   color: white;
   padding: 6px 12px;
   border-radius: 20px;
@@ -78,7 +78,7 @@
 .route-location svg {
   width: 24px;
   height: 24px;
-  color: #3b82f6;
+  color: #0d7a49;
 }
 
 .route-location span {
@@ -197,7 +197,7 @@
   align-items: center;
   gap: 8px;
   padding: 12px 24px;
-  background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+  background: linear-gradient(135deg, #0a5c36 0%, #0d7a49 100%);
   color: white;
   border: none;
   border-radius: 10px;
@@ -205,12 +205,12 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 4px 12px rgba(10, 92, 54, 0.3);
 }
 
 .btn-add-route:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+  box-shadow: 0 6px 16px rgba(10, 92, 54, 0.4);
 }
 
 .btn-add-route svg {
@@ -378,14 +378,14 @@
 }
 
 .btn-submit {
-  background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+  background: linear-gradient(135deg, #0a5c36 0%, #0d7a49 100%);
   color: white;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 4px 12px rgba(10, 92, 54, 0.3);
 }
 
 .btn-submit:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+  box-shadow: 0 6px 16px rgba(10, 92, 54, 0.4);
 }
 
 .empty-state {

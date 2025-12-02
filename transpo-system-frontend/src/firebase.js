@@ -11,7 +11,9 @@ import {
   onAuthStateChanged,
   sendPasswordResetEmail,
   verifyPasswordResetCode,
-  confirmPasswordReset
+  confirmPasswordReset,
+  sendEmailVerification,
+  applyActionCode
 } from "firebase/auth";
 import { 
   getFirestore, 
@@ -60,6 +62,8 @@ export {
   sendPasswordResetEmail,
   verifyPasswordResetCode,
   confirmPasswordReset,
+  sendEmailVerification,
+  applyActionCode,
   googleProvider,
   facebookProvider,
   doc,

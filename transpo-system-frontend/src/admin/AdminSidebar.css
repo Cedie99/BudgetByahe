@@ -5,7 +5,7 @@
   top: 0;
   width: 280px;
   height: 100vh;
-  background: linear-gradient(180deg, #1e3a8a 0%, #1e40af 50%, #2563eb 100%);
+  background: linear-gradient(180deg, #0a5c36 0%, #0d7a49 50%, #047857 100%);
   color: white;
   display: flex;
   flex-direction: column;
@@ -36,11 +36,12 @@
 .sidebar-badge {
   display: inline-block;
   padding: 4px 12px;
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(251, 191, 36, 0.3);
   border-radius: 12px;
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 1px;
+  color: #fbbf24;
 }
 
 .sidebar-nav {
@@ -77,10 +78,10 @@
 }
 
 .nav-item.active {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(251, 191, 36, 0.2);
   color: white;
   font-weight: 700;
-  border-left: 4px solid white;
+  border-left: 4px solid #fbbf24;
   padding-left: 12px;
 }
 
