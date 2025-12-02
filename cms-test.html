@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CMS API Test</title>
+</head>
+<body>
+    <h1>CMS API Test</h1>
+    <button onclick="testGetSettings()">Test Get Settings</button>
+    <button onclick="testSaveSettings()">Test Save Settings</button>
+    <div id="output"></div>
+
+    <script>
+        async function testGetSettings() {
+            try {
+                const response = await fetch('http://localhost:8000/api/cms/settings');
+                const data = await response.json();
+                document.getElementById('output').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('output').innerHTML = 'Error: ' + error.message;
+            }
+        }
+
+        async function testSaveSettings() {
+            try {
+                const response = await fetch('http://localhost:8000/api/cms/settings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        settings: [
+                            {
+                                key: 'test_setting',
+                                value: 'Test Value',
+                                type: 'text',
+                                group: 'test'
+                            }
+                        ]
+                    })
+                });
+                const data = await response.json();
+                document.getElementById('output').innerHTML = '<pre>Save Result: ' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('output').innerHTML = 'Save Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

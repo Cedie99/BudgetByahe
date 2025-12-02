@@ -136,14 +136,25 @@ class UserController extends Controller
     public function updateProfile(Request $request)
     {
         try {
+            \Log::info('Profile update request received', [
+                'firebase_uid' => $request->input('firebase_uid'),
+                'first_name' => $request->input('first_name'),
+                'last_name' => $request->input('last_name'),
+                'has_profile_photo' => !empty($request->input('profile_photo'))
+            ]);
+
             $validator = Validator::make($request->all(), [
                 'firebase_uid' => 'required|string',
                 'first_name' => 'required|string|max:255',
                 'last_name' => 'required|string|max:255',
-                'profile_photo' => 'nullable|string', // Base64 image
+                'profile_photo' => 'nullable', // Accept base64 or null
             ]);
 
             if ($validator->fails()) {
+                \Log::error('Profile update validation failed', [
+                    'errors' => $validator->errors()->toArray()
+                ]);
+                
                 return response()->json([
                     'success' => false,
                     'message' => 'Validation failed',
@@ -157,16 +168,30 @@ class UserController extends Controller
             $user = User::where('firebase_uid', $data['firebase_uid'])->first();
 
             if (!$user) {
+                \Log::error('User not found', ['firebase_uid' => $data['firebase_uid']]);
+                
                 return response()->json([
                     'success' => false,
                     'message' => 'User not found',
                 ], 404);
             }
 
-            // Update user profile
-            $user->update([
+            // Prepare update data
+            $updateData = [
                 'name' => trim($data['first_name']) . ' ' . trim($data['last_name']),
-                'profile_photo' => $data['profile_photo'] ?? $user->profile_photo,
+            ];
+
+            // Only update profile_photo if it's provided (not null or empty string)
+            if (isset($data['profile_photo'])) {
+                $updateData['profile_photo'] = $data['profile_photo'];
+            }
+
+            // Update user profile
+            $user->update($updateData);
+
+            \Log::info('Profile updated successfully', [
+                'user_id' => $user->id,
+                'firebase_uid' => $user->firebase_uid
             ]);
 
             return response()->json([
@@ -182,7 +207,7 @@ class UserController extends Controller
             ]);
         } catch (\Exception $e) {
             \Log::error('Profile update failed: ' . $e->getMessage(), [
-                'request_data' => $request->all(),
+                'request_data' => $request->except('profile_photo'), // Don't log base64 image
                 'trace' => $e->getTraceAsString()
             ]);
 

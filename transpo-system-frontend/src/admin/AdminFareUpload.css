@@ -1,0 +1,569 @@
+/* Admin Fare Upload Wrapper */
+.admin-fare-upload-wrapper {
+  margin-left: 280px;
+  padding: 40px 24px;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+  position: relative;
+  z-index: 1;
+}
+
+/* Header Section */
+.admin-fare-header {
+  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #3b82f6 100%);
+  color: black;
+  margin-bottom: 32px;
+  padding: 40px 32px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(30, 58, 138, 0.2);
+}
+
+.admin-fare-title {
+  font-size: 2.25rem;
+  font-weight: 900;
+  margin: 0 0 12px 0;
+  color: black;
+  letter-spacing: -0.5px;
+}
+
+.admin-fare-subtitle {
+  font-size: 1.05rem;
+  color: black;
+  margin: 0 0 24px 0;
+  font-weight: 500;
+}
+
+/* Category Selector Field */
+.admin-fare-header .admin-fare-field {
+  margin-top: 24px;
+}
+
+.admin-fare-header .admin-fare-field label {
+  color: black;
+  font-weight: 600;
+  margin-bottom: 10px;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.admin-fare-header .admin-fare-select {
+  background-color: rgba(255, 255, 255, 0.15);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: black;
+  padding: 12px 16px;
+  font-weight: 500;
+  backdrop-filter: blur(10px);
+}
+
+.admin-fare-header .admin-fare-select:focus {
+  background-color: rgba(255, 255, 255, 0.25);
+  border-color: black;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
+}
+
+.admin-fare-header .admin-fare-select option {
+  background-color: #1e3a8a;
+  color: white;
+}
+
+/* Main Container */
+.admin-fare-container {
+  background: white;
+  border-radius: 14px;
+  padding: 36px;
+  margin-bottom: 32px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.admin-fare-container:hover {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+}
+
+/* Form Header */
+.admin-fare-form-header {
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 2px solid #f3f4f6;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.admin-fare-form-header > div:first-child {
+  flex: 1;
+}
+
+.admin-fare-form-header h2 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  margin: 0 0 8px 0;
+  color: #1e3a8a;
+  letter-spacing: -0.5px;
+}
+
+.admin-fare-form-header p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* Form Grid */
+.admin-fare-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+
+@media (max-width: 1024px) {
+  .admin-fare-form-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+/* Form Fields */
+.admin-fare-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-fare-field-full {
+  grid-column: 1 / -1;
+}
+
+.admin-fare-field label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #1f2937;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.admin-fare-field input[type="text"],
+.admin-fare-field input[type="number"],
+.admin-fare-select {
+  padding: 12px 16px;
+  font-size: 0.95rem;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 10px;
+  background-color: #f9fafb;
+  color: #111827;
+  transition: all 0.3s ease;
+  outline: none;
+  font-family: inherit;
+}
+
+.admin-fare-field input[type="text"]::placeholder,
+.admin-fare-field input[type="number"]::placeholder {
+  color: #9ca3af;
+}
+
+.admin-fare-field input[type="text"]:focus,
+.admin-fare-field input[type="number"]:focus,
+.admin-fare-select:focus {
+  border-color: #2563eb;
+  background-color: white;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+
+.admin-fare-field input[type="text"]:disabled,
+.admin-fare-field input[type="number"]:disabled,
+.admin-fare-select:disabled {
+  background-color: #f3f4f6;
+  color: #9ca3af;
+  cursor: not-allowed;
+  border-color: #e5e7eb;
+}
+
+/* Help Text */
+.admin-fare-help-text {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin: 8px 0 14px 0;
+  font-weight: 500;
+  background: #f0f9ff;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border-left: 3px solid #2563eb;
+}
+
+/* Coordinates Display */
+.admin-fare-coords-display {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 16px;
+  padding: 16px;
+  background: #f9fafb;
+  border-radius: 10px;
+}
+
+.admin-fare-coords-display input {
+  padding: 12px 14px;
+  font-size: 0.9rem;
+  background-color: white;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  color: #374151;
+  font-weight: 500;
+}
+
+/* Drag & Drop Zone */
+.admin-fare-dropzone {
+  border: 2px dashed #cbd5e1;
+  border-radius: 14px;
+  padding: 56px 32px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f0f4f8 100%);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.admin-fare-dropzone:hover {
+  border-color: #2563eb;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.1);
+}
+
+.admin-fare-dropzone.dragging {
+  border-color: #2563eb;
+  border-style: solid;
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  box-shadow: 0 12px 32px rgba(37, 99, 235, 0.15);
+}
+
+.admin-fare-dropzone-icon {
+  width: 56px;
+  height: 56px;
+  color: #94a3b8;
+  transition: all 0.3s ease;
+}
+
+.admin-fare-dropzone:hover .admin-fare-dropzone-icon {
+  color: #2563eb;
+  transform: scale(1.1);
+}
+
+.admin-fare-dropzone-text {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0;
+  text-align: center;
+}
+
+.admin-fare-dropzone-hint {
+  font-size: 0.9rem;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+/* Buttons */
+.admin-fare-btn {
+  padding: 14px 28px;
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.admin-fare-btn-primary {
+  width: 100%;
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+  color: white;
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3);
+}
+
+.admin-fare-btn-primary:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px rgba(37, 99, 235, 0.4);
+}
+
+.admin-fare-btn-primary:active:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.admin-fare-btn-primary:disabled {
+  background: linear-gradient(135deg, #d1d5db 0%, #b3b8c0 100%);
+  color: #9ca3af;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.admin-fare-btn-danger {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  color: #b91c1c;
+  padding: 10px 18px;
+  font-size: 0.85rem;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.15);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+}
+
+.admin-fare-btn-danger:hover {
+  background: linear-gradient(135deg, #fecaca 0%, #fca5a5 100%);
+  color: #991b1b;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
+}
+
+.admin-fare-btn-danger:active {
+  transform: translateY(0);
+}
+
+/* List Section */
+.admin-fare-list-section {
+  margin-top: 48px;
+  padding-top: 36px;
+  border-top: 2px solid #f3f4f6;
+}
+
+.admin-fare-list-section h3 {
+  font-size: 1.4rem;
+  font-weight: 800;
+  margin: 0 0 24px 0;
+  color: #1e3a8a;
+  letter-spacing: -0.3px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-fare-list-section h3::before {
+  content: '';
+  width: 4px;
+  height: 24px;
+  background: linear-gradient(180deg, #2563eb, #1e40af);
+  border-radius: 2px;
+}
+
+/* Item List */
+.admin-fare-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.admin-fare-list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+  padding: 20px 24px;
+  border-radius: 12px;
+  border: 1.5px solid #e5e7eb;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.admin-fare-list-item:hover {
+  border-color: #2563eb;
+  background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%);
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.1);
+  transform: translateX(4px);
+}
+
+.admin-fare-list-content {
+  flex: 1;
+}
+
+.admin-fare-list-content h4 {
+  font-size: 1.05rem;
+  font-weight: 800;
+  margin: 0 0 6px 0;
+  color: #1f2937;
+  letter-spacing: -0.3px;
+}
+
+.admin-fare-list-content p {
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin: 4px 0;
+  font-weight: 500;
+}
+
+.admin-fare-list-content strong {
+  color: #2563eb;
+  font-weight: 700;
+}
+
+.admin-fare-list-meta {
+  display: inline-block;
+  font-size: 0.8rem;
+  color: #9ca3af;
+  margin-top: 6px;
+  padding: 4px 10px;
+  background: #f3f4f6;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+/* Loading & Empty States */
+.admin-fare-loading,
+.admin-fare-empty {
+  padding: 48px 24px;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 1rem;
+  font-weight: 500;
+  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+  border-radius: 12px;
+  border: 1.5px dashed #e5e7eb;
+}
+
+.admin-fare-form {
+  margin-bottom: 28px;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .admin-fare-upload-wrapper {
+    margin-left: 0;
+    padding: 24px 16px;
+  }
+
+  .admin-fare-header {
+    padding: 32px 24px;
+  }
+
+  .admin-fare-title {
+    font-size: 1.75rem;
+  }
+
+  .admin-fare-container {
+    padding: 28px;
+  }
+
+  .admin-fare-form-header {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-fare-upload-wrapper {
+    padding: 16px 12px;
+  }
+
+  .admin-fare-header {
+    padding: 24px 16px;
+    margin-bottom: 24px;
+  }
+
+  .admin-fare-title {
+    font-size: 1.5rem;
+  }
+
+  .admin-fare-subtitle {
+    font-size: 0.95rem;
+  }
+
+  .admin-fare-container {
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+
+  .admin-fare-form-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .admin-fare-coords-display {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .admin-fare-dropzone {
+    padding: 40px 20px;
+  }
+
+  .admin-fare-list-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .admin-fare-btn {
+    width: 100%;
+  }
+
+  .admin-fare-btn-danger {
+    width: 100%;
+  }
+
+  .admin-fare-form-header h2 {
+    font-size: 1.35rem;
+  }
+
+  .admin-fare-list-section h3 {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-fare-upload-wrapper {
+    padding: 12px 8px;
+  }
+
+  .admin-fare-header {
+    padding: 16px 12px;
+    border-radius: 12px;
+  }
+
+  .admin-fare-title {
+    font-size: 1.25rem;
+  }
+
+  .admin-fare-subtitle {
+    font-size: 0.85rem;
+    margin-bottom: 16px;
+  }
+
+  .admin-fare-container {
+    padding: 16px;
+    border-radius: 10px;
+  }
+
+  .admin-fare-form-header h2 {
+    font-size: 1.1rem;
+  }
+
+  .admin-fare-field label {
+    font-size: 0.85rem;
+  }
+
+  .admin-fare-dropzone {
+    padding: 32px 16px;
+    gap: 12px;
+  }
+
+  .admin-fare-dropzone-icon {
+    width: 44px;
+    height: 44px;
+  }
+
+  .admin-fare-btn {
+    padding: 12px 20px;
+    font-size: 0.85rem;
+  }
+}

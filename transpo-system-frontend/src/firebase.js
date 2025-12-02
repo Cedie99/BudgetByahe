@@ -11,7 +11,9 @@ import {
   onAuthStateChanged,
   sendPasswordResetEmail,
   verifyPasswordResetCode,
-  confirmPasswordReset
+  confirmPasswordReset,
+  sendEmailVerification,
+  applyActionCode
 } from "firebase/auth";
 import { 
   getFirestore, 
@@ -25,7 +27,8 @@ import {
   deleteDoc,
   query,
   orderBy,
-  limit
+  limit,
+  onSnapshot
 } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -59,6 +62,8 @@ export {
   sendPasswordResetEmail,
   verifyPasswordResetCode,
   confirmPasswordReset,
+  sendEmailVerification,
+  applyActionCode,
   googleProvider,
   facebookProvider,
   doc,
@@ -72,4 +77,5 @@ export {
   query,
   orderBy,
   limit,
+  onSnapshot,
 };

@@ -55,6 +55,21 @@ function Login() {
     try {
       const userCred = await signInWithEmailAndPassword(auth, email, password);
       const user = userCred.user;
+
+      // Check if email is verified (only for password provider)
+      if (!user.emailVerified && user.providerData[0]?.providerId === 'password') {
+        setNotifType('error');
+        setNotifMessage('Please verify your email address before logging in.');
+        setShowNotif(true);
+        setIsLoading(false);
+        
+        // Redirect to verify-email page after notification closes
+        setTimeout(() => {
+          navigate('/verify-email');
+        }, 2000);
+        return;
+      }
+
       const idToken = await user.getIdToken();
 
       // Get user data from Firestore
@@ -392,6 +407,15 @@ function Login() {
                   'Log In'
                 )}
               </button>
+            </div>
+
+            <div style={{textAlign: 'center', marginTop: '12px'}}>
+              <span 
+                style={{color:'#0d7a49', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline'}}
+                onClick={() => navigate('/forgot-password')}
+              >
+                Forgot password?
+              </span>
             </div>
 
             <div style={{marginTop:12, textAlign:'center'}}>

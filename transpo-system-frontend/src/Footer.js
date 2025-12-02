@@ -1,18 +1,33 @@
 import React from "react";
 import "./Footer.css"; // optional: for styling
+import useCMS from './hooks/useCMS';
 
 
 const Footer = () => {
+    const { cmsData, loading, error } = useCMS();
+    
     return (
         <footer className="footer">
           <div className="footer-grid">
             <div className="footer-brand">
-              <h2>Budget Biyahe</h2>
-              <p>Your smart travel companion for everyday commuting.</p>
+              <h2>{cmsData.navbarBrand || 'Budget Biyahe'}</h2>
+              <p>{cmsData.footerText || 'Your smart travel companion for everyday commuting.'}</p>
               <div className="social-icons">
-                <a href="#"><i className="fab fa-facebook-f"></i></a>
-                <a href="#"><i className="fab fa-twitter"></i></a>
-                <a href="#"><i className="fab fa-instagram"></i></a>
+                {cmsData.facebookUrl && (
+                  <a href={cmsData.facebookUrl} target="_blank" rel="noopener noreferrer">
+                    <i className="fab fa-facebook-f"></i>
+                  </a>
+                )}
+                {cmsData.twitterUrl && (
+                  <a href={cmsData.twitterUrl} target="_blank" rel="noopener noreferrer">
+                    <i className="fab fa-twitter"></i>
+                  </a>
+                )}
+                {cmsData.instagramUrl && (
+                  <a href={cmsData.instagramUrl} target="_blank" rel="noopener noreferrer">
+                    <i className="fab fa-instagram"></i>
+                  </a>
+                )}
               </div>
             </div>
 
@@ -28,8 +43,8 @@ const Footer = () => {
 
             <div className="footer-contact">
               <h3>Get in Touch</h3>
-              <p><i className="fas fa-envelope"></i> <a href="mailto:support@budgetbyahe.com">support@budgetbyahe.com</a></p>
-              <p><i className="fas fa-phone"></i> <a href="tel:+639001234567">+63 900 123 4567</a></p>
+              <p><i className="fas fa-envelope"></i> <a href={`mailto:${cmsData.contactEmail || 'support@budgetbyahe.com'}`}>{cmsData.contactEmail || 'support@budgetbyahe.com'}</a></p>
+              <p><i className="fas fa-phone"></i> <a href={`tel:${cmsData.contactPhone || '+639001234567'}`}>{cmsData.contactPhone || '+63 900 123 4567'}</a></p>
               <p><i className="fas fa-map-marker-alt"></i> Bulacan, Philippines</p>
             </div>
           </div>
@@ -37,7 +52,7 @@ const Footer = () => {
           <div className="footer-divider"></div>
 
           <div className="footer-bottom">
-            <p>© {new Date().getFullYear()} <span>Budget Biyahe</span> — All rights reserved.</p>
+            <p>© {new Date().getFullYear()} <span>{cmsData.navbarBrand || 'Budget Biyahe'}</span> — All rights reserved.</p>
           </div>
         </footer>
 
